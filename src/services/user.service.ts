@@ -23,7 +23,6 @@ export class UserService {
         //hashed password
         const hashedPassword = await utils.generateHashPassword(password);
 
-
         return db.user.create({
             data: {
                 fullname,

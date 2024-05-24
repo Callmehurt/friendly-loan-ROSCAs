@@ -69,4 +69,36 @@ export class UserExistError extends AppError{
     }
 }
 
+export class UserNotFoundError extends AppError{
+
+    constructor(
+        message: string = 'User with this email is not found',
+        errorCode: ErrorCodes = ErrorCodes.USER_NOT_FOUND,
+        description: string = 'User does not exist error',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
+export class InvalidCredentialError extends AppError{
+
+    constructor(
+        message: string = 'Provided credential is not valid',
+        errorCode: ErrorCodes = ErrorCodes.INVALID_CREDENTIAL,
+        description: string = 'Invalid credential',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
 

@@ -13,3 +13,11 @@ export const UserValidation = (body: any) => {
     });
     return schema.validate(body);
 }
+
+export const UserLoginValidation = (body: any) => {
+    const schema = Joi.object({
+        email: Joi.string().email().required(),
+        password: Joi.string().required()
+    });
+    return schema.validate(body);
+}

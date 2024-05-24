@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
 import { Utils } from "../utils";
-import { ApiError, UserExistError, ValidationError } from "../exceptions";
-import { UserValidation } from "../utils/validation.schema";
+import { ApiError, InvalidCredentialError, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
+import { UserLoginValidation, UserValidation } from "../utils/validation.schema";
 import { ErrorCodes } from "../utils/enums";
 
 
@@ -42,6 +42,49 @@ export class UserController{
             // ));
             next(error);
         }
+    }
+
+    loginUser = async (req: Request, res: Response, next: NextFunction) => {
+
+        try{
+
+            const { error } = UserLoginValidation(req.body);
+            if(error){
+                throw new ValidationError(`${error.details[0].message}`, error);
+            }
+    
+            const {email, password} = req.body;
+    
+            const existedUser = await userService.findUser(email);
+            if(!existedUser){
+                throw new UserNotFoundError();
+            }
+    
+            const isPasswordValid = await utils.validatePassword(password, existedUser.password);
+    
+            if(!isPasswordValid){
+                throw new InvalidCredentialError();
+                
+            }
+    
+            const { accessToken, refreshToken } = await utils.generateSignature({
+                role: existedUser.role,
+                id: existedUser.id
+            });
+    
+            res.cookie('accessToken', accessToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
+            res.cookie('refreshToken', refreshToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
+
+            res.json({
+                user: existedUser,
+                accessToken,
+                refreshToken
+            });
+    
+        }catch(err){
+            next(err)
+        }
+
     }
 
     listUsers = async(req: Request, res: Response, next: NextFunction) => {

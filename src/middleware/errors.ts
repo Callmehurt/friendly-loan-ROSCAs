@@ -9,3 +9,7 @@ export const errorMiddleware = (error: AppError, req: Request, res: Response, ne
         error: error.error
     });
 }
+
+export const routeNotFoundMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    res.status(404).send('Route does not exist');
+}
