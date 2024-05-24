@@ -18,8 +18,10 @@ enum UserRole{
 //models
 model User{
   id Int @id @default(autoincrement())
-  name String
+  fullname String
+  address String 
   email String @unique
+  phone String @unique
   password String
   role UserRole @default(STUDENT)
   createdAt DateTime @default(now())

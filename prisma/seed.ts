@@ -1,15 +1,19 @@
 import { db } from "../src/utils/db.server";
 
 type User = {
-    name: string;
+    fullname: string;
     email: string;
-    password: string
+    password: string;
+    address: string;
+    phone: string;
 };
 
-const getUsers = (): Array<User> => {
+const getUsers = (): Array <User> => {
     return [
         {
-            name: "Sandeep",
+            fullname: "Sandeep",
+            address: 'random address',
+            phone: "8589685895",
             email: "test@mail.com",
             password: "nepal123"
         },
@@ -19,12 +23,14 @@ const getUsers = (): Array<User> => {
 const seed = async () => {
     await Promise.all(
         getUsers().map((newUser) => {
-            const {name, email, password} = newUser;
+            const {fullname, email, password, phone, address} = newUser;
                 return db.user.create({
                     data: {
-                        name,
+                        fullname,
                         email,
-                        password
+                        phone,
+                        password,
+                        address
                     }
                 })
         })

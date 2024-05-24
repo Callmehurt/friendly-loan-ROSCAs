@@ -3,6 +3,7 @@ import express from 'express';
 import type { Express } from 'express';
 import cors from 'cors';
 import rootRouter from './routes';
+import { errorMiddleware } from './middleware/errors';
 
 dotenv.config();
 
@@ -23,6 +24,9 @@ app.use(express.json());
 //routes
 app.use('/api', rootRouter)
 
+
+//error middleware
+app.use(errorMiddleware)
 app.listen(PORT, () => {
     console.log(`App running on port ${PORT}`);
 })
