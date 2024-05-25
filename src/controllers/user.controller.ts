@@ -1,9 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
 import { Utils } from "../utils";
-import { ApiError, InvalidCredentialError, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
+import { InvalidCredentialError, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
 import { UserLoginValidation, UserValidation } from "../utils/validation.schema";
-import { ErrorCodes } from "../utils/enums";
 
 
 const userService: UserService = new UserService();
@@ -85,6 +84,12 @@ export class UserController{
             next(err)
         }
 
+    }
+
+    me = async(req: any, res: Response, next: NextFunction) => {
+        const userId: number = parseInt(req.userId as string, 10);
+        const user = await userService.findUserById(userId);
+        res.json(user);
     }
 
     listUsers = async(req: Request, res: Response, next: NextFunction) => {

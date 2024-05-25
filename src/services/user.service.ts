@@ -16,6 +16,24 @@ export class UserService {
         })
     }
 
+    findUserById = async(id: number): Promise <Partial<User | null>> => {
+        return db.user.findFirst({
+            where: {
+                id: id
+            },
+            select: {
+                id: true,
+                fullname: true,
+                address: true,
+                email: true,
+                phone: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true
+            }
+        })
+    }
+
     createStudent = async (data: Omit<User, "id">): Promise <Partial<User | null>> => {
 
         const { fullname, address, email, password, phone} = data;

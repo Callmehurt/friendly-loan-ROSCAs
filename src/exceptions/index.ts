@@ -101,4 +101,36 @@ export class InvalidCredentialError extends AppError{
     }
 }
 
+export class UnauthorizedException extends AppError{
+
+    constructor(
+        message: string = 'Unauthorized user',
+        errorCode: ErrorCodes = ErrorCodes.UNAUTHORIZED,
+        description: string = 'Unauthorized',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
+export class InvalidTokenException extends AppError{
+
+    constructor(
+        message: string = 'Invalid token provided',
+        errorCode: ErrorCodes = ErrorCodes.INVALID_TOKEN,
+        description: string = 'Invalid Token',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
 
