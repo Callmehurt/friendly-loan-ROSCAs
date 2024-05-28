@@ -11,4 +11,5 @@ export enum ErrorCodes{
     INVALID_CREDENTIAL = 702,
     UNAUTHORIZED = 401,
     INVALID_TOKEN = 403,
+    CONFLICT = 409, 
 }

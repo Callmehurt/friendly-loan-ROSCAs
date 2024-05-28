@@ -14,10 +14,20 @@ export const UserValidation = (body: any) => {
     return schema.validate(body);
 }
 
-export const UserLoginValidation = (body: any) => {
+export const UserLoginValidation = (body: {email: string, password: string}) => {
     const schema = Joi.object({
         email: Joi.string().email().required(),
         password: Joi.string().required()
     });
+    return schema.validate(body);
+}
+
+export const SavingGroupValidation = (body: {name: string, description: string}) => {
+
+    const schema = Joi.object({
+        name: Joi.string().min(5).required(),
+        description: Joi.string().required()
+    });
+
     return schema.validate(body);
 }

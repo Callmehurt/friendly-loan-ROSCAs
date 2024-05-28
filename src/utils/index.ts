@@ -1,6 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+const randomId = require('random-id') as any;
+
+
 export class Utils {
 
     generateSalt = async () => {
@@ -36,6 +39,13 @@ export class Utils {
 
         return Promise.resolve({accessToken, refreshToken});
 
+    }
+
+    generateRandomId = async (len: number) => {
+
+        const pattern = 'aA0';
+
+        return  await randomId(len, pattern);
     }
 
 }

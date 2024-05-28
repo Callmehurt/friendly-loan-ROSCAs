@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
 import { Utils } from "../utils";
-import { InvalidCredentialError, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
+import { InvalidCredentialError, InvalidTokenException, UnauthorizedException, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
 import { UserLoginValidation, UserValidation } from "../utils/validation.schema";
-
+import jwt from 'jsonwebtoken';
 
 const userService: UserService = new UserService();
 const utils: Utils = new Utils();
@@ -27,6 +27,14 @@ export class UserController{
             if(error){
                 throw new ValidationError(`${error.details[0].message}`, error);
             }
+
+            // const data = {
+            //     fullname: fullname,
+            //     email: email,
+            //     password: password,
+            //     address: address,
+            //     phone
+            // }
 
             const user = await userService.createStudent(req.body);
 
@@ -59,7 +67,7 @@ export class UserController{
                 throw new UserNotFoundError();
             }
     
-            const isPasswordValid = await utils.validatePassword(password, existedUser.password);
+            const isPasswordValid = await utils.validatePassword(password, existedUser.password as string);
     
             if(!isPasswordValid){
                 throw new InvalidCredentialError();
@@ -71,7 +79,9 @@ export class UserController{
                 id: existedUser.id
             });
     
-            res.cookie('accessToken', accessToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
+            await userService.updateUser(existedUser.id as number, {refreshToken: refreshToken});
+
+            // res.cookie('accessToken', accessToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
             res.cookie('refreshToken', refreshToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
 
             res.json({
@@ -84,6 +94,83 @@ export class UserController{
             next(err)
         }
 
+    }
+
+    refreshAuthToken = async(req: Request, res: Response, next: NextFunction) => {
+
+        try{
+
+            const cookie = req.cookies;
+            if(!cookie?.refreshToken){
+                throw new UnauthorizedException();
+            }
+
+            const refreshToken = cookie.refreshToken;
+
+            const user = await userService.findUserByToken(refreshToken);
+            if(!user){
+                throw new InvalidTokenException();
+            }
+
+            jwt.verify(
+                refreshToken,
+                process.env.REFRESH_SECRET as string,
+                async (err: any, decoded: any) => {
+
+                    //if error or not a correct user
+                    if(err || user.id !== decoded.id){
+                        throw new InvalidTokenException();
+                    }
+
+                    //generate tokens using payload
+                    const { accessToken, refreshToken } = await utils.generateSignature({
+                        role: user.role,
+                        id: user.id
+                    });
+
+                    //update user refresh token in database
+                    await userService.updateUser(user.id as number, {refreshToken: refreshToken});
+
+                    //set cookie with new refresh token
+                    res.cookie('refreshToken', refreshToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
+
+                    res.json({
+                        user: user,
+                        accessToken: accessToken
+                    });
+                }
+            )
+
+        }catch(err){
+            next(err);
+        }
+    }
+
+    logoutUser = async(req: any, res: Response, next: NextFunction) => {
+        
+        try{
+
+            const cookie = req.cookies;
+            if(!cookie?.refreshToken){
+                throw new InvalidTokenException();
+            }
+
+            const refreshToken = cookie.refreshToken;
+
+            const user = await userService.findUserByToken(refreshToken);
+            if(!user){
+                throw new InvalidTokenException();
+            }
+
+            //update user refresh token in database
+            await userService.updateUser(user.id as number, {refreshToken: ''});
+
+            res.clearCookie('refreshToken', {httpOnly: true, sameSite: false, secure: true});
+            return res.sendStatus(200);
+
+        }catch(err){
+            next(err)
+        }
     }
 
     me = async(req: any, res: Response, next: NextFunction) => {

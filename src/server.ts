@@ -1,3 +1,5 @@
+import './utils/intrument'
+import * as Sentry from "@sentry/node"
 import * as dotenv from 'dotenv';
 import express from 'express';
 import type { Express } from 'express';
@@ -38,6 +40,8 @@ app.use(cookieParser());
 
 //routes
 app.use('/api', rootRouter)
+
+Sentry.setupExpressErrorHandler(app);
 
 //route not found middleware
 app.use(routeNotFoundMiddleware);

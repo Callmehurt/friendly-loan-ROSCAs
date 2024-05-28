@@ -25,7 +25,7 @@ export class ApiError extends AppError{
 
     constructor(
         message: string,
-        errorCode: ErrorCodes = ErrorCodes.VALIDATION_ERROR,
+        errorCode: ErrorCodes = ErrorCodes.SERVER_ERROR,
         description: string,
         error: any
     ){
@@ -123,6 +123,22 @@ export class InvalidTokenException extends AppError{
         message: string = 'Invalid token provided',
         errorCode: ErrorCodes = ErrorCodes.INVALID_TOKEN,
         description: string = 'Invalid Token',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
+export class ConflictException extends AppError{
+
+    constructor(
+        message: string = 'User already in the group',
+        errorCode: ErrorCodes = ErrorCodes.CONFLICT,
+        description: string = 'Conflict error',
     ){
         super(
             message,

@@ -11,23 +11,51 @@ datasource db {
 
 //user roles enum
 enum UserRole{
-  ADMIN 
-  STUDENT
+  admin 
+  student
 }
 
 //models
 model User{
   id Int @id @default(autoincrement())
+  uniqueIdentity String @unique
   fullname String
   address String 
   email String @unique
   phone String @unique
   password String
-  role UserRole @default(STUDENT)
+  role UserRole @default(student)
+  refreshToken String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  createdGroup SavingGroup[]
+  groups   GroupMembers[] @relation("GroupMember")
+  addedMembers GroupMembers[] @relation("UserAddedMembers")
   @@map("users") 
+}
+
+model SavingGroup{
+  id String @id
+  name String
+  description String @db.LongText
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users GroupMembers[]
+  @@map("saving_groups")
+}
+
+model GroupMembers{
+  userId  Int
+  groupId String
+  addedBy Int
+  user    User  @relation("GroupMember", fields: [userId], references: [id])
+  group   SavingGroup @relation(fields: [groupId], references: [id])
+  addedByUser  User  @relation("UserAddedMembers", fields: [addedBy], references: [id])
+  @@id([userId, groupId])
+
+  @@map("group_members")
 }
 
 
