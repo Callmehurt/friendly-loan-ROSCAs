@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { SavingGroupService } from "../services/saving.group.service";
 import { SavingGroupValidation } from "../utils/validation.schema";
-import { ConflictException, ValidationError } from "../exceptions";
+import { ConflictException, RecordNotFoundException, ValidationError } from "../exceptions";
 import { Utils } from "../utils";
 import { UserService } from "../services/user.service";
 
@@ -34,9 +34,7 @@ export class SavingGroupController{
             res.json(group);
 
 
-        }catch(err){
-            console.log(err);
-            
+        }catch(err){            
             next(err);
         }
 
@@ -48,8 +46,13 @@ export class SavingGroupController{
 
             const {userToAdd, groupId} = req.params;
             const addedBy = req.userId;
-            const userId = parseInt(userToAdd as string, 10)
+            const userId = parseInt(userToAdd as string, 10);
 
+            const group = await savingGroupService.findGroup(groupId as string);
+            
+            if(!group){
+                throw new RecordNotFoundException('Group record not found');
+            }
 
             const checkPreExisted = await savingGroupService.findUserInGroup(userId, groupId);
 
@@ -64,6 +67,48 @@ export class SavingGroupController{
 
         }catch(err){            
             next(err)
+        }
+    }
+
+    findGroupMembers = async (req: Request, res: Response, next: NextFunction) => {
+        try{
+
+            const {groupId} = req.params;
+
+            const group = await savingGroupService.findGroup(groupId as string);
+            
+            if(!group){
+                throw new RecordNotFoundException('Group record not found');
+            }
+            const members = await savingGroupService.findGroupMembers(groupId as string);
+            res.json(members);
+
+        }catch(err){
+            console.log(err);
+            next(err);
+        }
+    }
+
+
+    findUserAddedMembers = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const userId = parseInt(req.userId as string, 10);
+            const {groupId} = req.params;
+
+            const group = await savingGroupService.findGroup(groupId as string);
+            
+            if(!group){
+                throw new RecordNotFoundException('Group record not found');
+            }
+
+            const addedMembers = await savingGroupService.findUserAddedMembers(userId, groupId);
+            res.json(addedMembers);
+
+        }catch(err){
+            console.log(err);
+            
+            next(err);
         }
     }
 

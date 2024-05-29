@@ -10,9 +10,17 @@ datasource db {
 }
 
 //user roles enum
-enum UserRole{
+enum UserRole {
   admin 
   student
+}
+
+// Loan status
+enum LoanStatus {
+  pending
+  rejected
+  active
+  completed
 }
 
 //models
@@ -31,11 +39,13 @@ model User{
   createdGroup SavingGroup[]
   groups   GroupMembers[] @relation("GroupMember")
   addedMembers GroupMembers[] @relation("UserAddedMembers")
+  loans Loan[]
+  contributions Contribution[]
   @@map("users") 
 }
 
 model SavingGroup{
-  id String @id
+  id String @id @unique
   name String
   description String @db.LongText
   user User @relation(fields: [userId], references: [id])
@@ -43,6 +53,8 @@ model SavingGroup{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users GroupMembers[]
+  loans  Loan[]
+  contributions Contribution[]
   @@map("saving_groups")
 }
 
@@ -53,9 +65,54 @@ model GroupMembers{
   user    User  @relation("GroupMember", fields: [userId], references: [id])
   group   SavingGroup @relation(fields: [groupId], references: [id])
   addedByUser  User  @relation("UserAddedMembers", fields: [addedBy], references: [id])
-  @@id([userId, groupId])
 
+  @@id([userId, groupId])
   @@map("group_members")
+}
+
+model Contribution {
+  id              Int        @id @default(autoincrement())
+  userId          Int
+  groupId         String
+  amount          Decimal     @db.Decimal(10, 2)
+  contributionDate DateTime   @default(now())
+  createdAt       DateTime    @default(now())
+  user            User        @relation(fields: [userId], references: [id])
+  group           SavingGroup @relation(fields: [groupId], references: [id])
+
+  @@map("contributions")
+}
+
+model Loan {
+  id             Int            @id @default(autoincrement())
+  reference      String @unique 
+  userId         Int
+  groupId        String
+  principalAmount Decimal        @db.Decimal(10, 2)
+  interestRate   Decimal        @db.Decimal(5, 2)
+  loanStartDate  DateTime
+  loanEndDate    DateTime?
+  status         LoanStatus     @default(active)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id])
+  group          SavingGroup    @relation(fields: [groupId], references: [id])
+  payments       LoanPayment[]
+
+  @@map("loans")
+}
+
+model LoanPayment {
+  id              Int        @id @default(autoincrement())
+  loanId          Int
+  paymentAmount   Decimal     @db.Decimal(10, 2)
+  paymentDate     DateTime
+  interestAmount  Decimal     @db.Decimal(10, 2)
+  principalAmount Decimal     @db.Decimal(10, 2)
+  createdAt       DateTime    @default(now())
+  loan            Loan        @relation(fields: [loanId], references: [id])
+
+  @@map("loan_payments")
 }
 
 

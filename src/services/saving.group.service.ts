@@ -4,11 +4,14 @@ import {CreateGroupAndEnrollSelfResult, GroupMember, SavingGroup, User } from ".
 
 export class SavingGroupService{
 
+    // create saving group
     create = async (data: SavingGroup): Promise <CreateGroupAndEnrollSelfResult> => {
 
         const {id, name, description, userId} = data;
 
         return await db.$transaction( async (tx) => {
+
+            //create new group
             const newGroup = await tx.savingGroup.create({
                 data: {
                     id,
@@ -33,6 +36,7 @@ export class SavingGroupService{
                 }
             });
 
+            // add self as a default member after group creation
             const newMember = await tx.groupMembers.create({
                 data: {
                     userId: userId,
@@ -40,9 +44,33 @@ export class SavingGroupService{
                     addedBy: userId
                 },
                 include: {
-                    user: true,
+                    user: {
+                        select: {
+                            id: true,
+                            uniqueIdentity: true,
+                            fullname: true,
+                            address: true,
+                            email: true,
+                            phone: true,
+                            role: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    },
                     group: true,
-                    addedByUser: true
+                    addedByUser: {
+                        select: {
+                            id: true,
+                            uniqueIdentity: true,
+                            fullname: true,
+                            address: true,
+                            email: true,
+                            phone: true,
+                            role: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    }
                 }
             });
 
@@ -50,6 +78,16 @@ export class SavingGroupService{
         })
     }
 
+    //find specific group
+    findGroup = async (groupId: string): Promise <SavingGroup | null> => {
+        return await db.savingGroup.findFirst({
+            where: {
+                id: groupId
+            }
+        });
+    }
+
+    // check if user exist in a group
     findUserInGroup = async (userId: number, groupId: string): Promise <GroupMember | null> => {
         return await db.groupMembers.findFirst({
             where: {
@@ -59,6 +97,7 @@ export class SavingGroupService{
         });
     }
 
+    //add new member in a group
     enrollMember = async (userId: any, groupId: string, addedBy: number): Promise <GroupMember | null > => {
 
         return await db.$transaction( async (tx) => {
@@ -69,11 +108,74 @@ export class SavingGroupService{
                     addedBy: addedBy
                 },
                 include: {
-                    user: true,
+                    user: {
+                        select: {
+                            id: true,
+                            uniqueIdentity: true,
+                            fullname: true,
+                            address: true,
+                            email: true,
+                            phone: true,
+                            role: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    },
                     group: true,
-                    addedByUser: true
+                    addedByUser: {
+                        select: {
+                            id: true,
+                            uniqueIdentity: true,
+                            fullname: true,
+                            address: true,
+                            email: true,
+                            phone: true,
+                            role: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    }
                 }
             });
         })
+    }
+
+    // list all members of a group
+    findGroupMembers = async (groupId: string): Promise <GroupMember []> => {
+
+        return await db.groupMembers.findMany({
+            where: {
+                groupId
+            },
+            include: {
+                user: true
+            }
+        })
+    }
+
+
+    //find members added by a user
+    findUserAddedMembers = async (userId: number, groupId: string) => {
+        return await db.groupMembers.findMany({
+          where: {
+            addedByUser: { id: userId },
+            groupId
+          },
+          include: { 
+            user: {
+                select: {
+                    id: true,
+                    uniqueIdentity: true,
+                    fullname: true,
+                    address: true,
+                    email: true,
+                    phone: true,
+                    role: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            }
+           },
+        });
     }
 }

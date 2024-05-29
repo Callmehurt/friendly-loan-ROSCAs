@@ -9,6 +9,8 @@ const savingGroupController: SavingGroupController = new SavingGroupController()
 
 savingGroupRoutes.post('/group/create', verifyJWT, savingGroupController.create);
 savingGroupRoutes.get('/group/:groupId/add/member/:userToAdd', verifyJWT, savingGroupController.enrollNewMember);
+savingGroupRoutes.get('/group/:groupId/my/members', verifyJWT, savingGroupController.findUserAddedMembers);
+savingGroupRoutes.get('/group/:groupId/members', verifyJWT, savingGroupController.findGroupMembers);
 
 
 export default savingGroupRoutes;

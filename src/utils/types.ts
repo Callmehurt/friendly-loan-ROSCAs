@@ -1,3 +1,5 @@
+import { Decimal } from "@prisma/client/runtime/library";
+
 export interface User{
     id: number;
     uniqueIdentity: string;
@@ -26,4 +28,13 @@ export interface GroupMember{
 export interface CreateGroupAndEnrollSelfResult{
     newGroup: SavingGroup;
     newMember: GroupMember;
-  };
+};
+
+
+export interface Contribution{
+    id: number;
+    userId: number;
+    groupId: string;
+    amount: Decimal;
+    contributionDate: Date;
+}

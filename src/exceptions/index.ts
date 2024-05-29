@@ -85,6 +85,22 @@ export class UserNotFoundError extends AppError{
     }
 }
 
+export class RecordNotFoundException extends AppError{
+
+    constructor(
+        message: string,
+        errorCode: ErrorCodes = ErrorCodes.RECORD_NOT_FOUND,
+        description: string = 'No data',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
 export class InvalidCredentialError extends AppError{
 
     constructor(
