@@ -1,5 +1,5 @@
 import { db } from "../utils/db.server";
-import {CreateGroupAndEnrollSelfResult, GroupMember, SavingGroup, User } from "../utils/types";
+import {CreateGroupAndEnrollSelfResult, GroupMember, SavingGroup, User, UserWithGroup } from "../utils/types";
 
 
 export class SavingGroupService{
@@ -140,6 +140,22 @@ export class SavingGroupService{
         })
     }
 
+    //user enrolled group list
+    userEnrolledGroups = async (userId: number): Promise <any | null> => {
+        return await db.user.findUnique({
+            where: {
+                id: userId
+            },
+            include:{
+                groups: {
+                    include: {
+                        group: true
+                    }
+                }
+            }
+        })
+    }
+
     // list all members of a group
     findGroupMembers = async (groupId: string): Promise <GroupMember []> => {
 
@@ -148,7 +164,7 @@ export class SavingGroupService{
                 groupId
             },
             include: {
-                user: true
+                user: true,
             }
         })
     }

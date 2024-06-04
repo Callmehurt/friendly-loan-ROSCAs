@@ -11,6 +11,18 @@ export interface User{
     role: string;
 }
 
+export interface UserWithGroup{
+    id: number;
+    uniqueIdentity: string;
+    fullname: string;
+    address: string,
+    email: string;
+    phone: string;
+    password: string;
+    role: string;
+    groups: GroupMember;
+}
+
 
 export interface SavingGroup{
     id: string;

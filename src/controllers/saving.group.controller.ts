@@ -4,6 +4,7 @@ import { SavingGroupValidation } from "../utils/validation.schema";
 import { ConflictException, RecordNotFoundException, ValidationError } from "../exceptions";
 import { Utils } from "../utils";
 import { UserService } from "../services/user.service";
+import { SavingGroup } from "../utils/types";
 
 const savingGroupService: SavingGroupService = new SavingGroupService();
 const userService: UserService = new UserService();
@@ -70,6 +71,27 @@ export class SavingGroupController{
         }
     }
 
+    findUserGroups = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const userId: number = parseInt(req.userId as string, 10);
+
+            const userInGroups = await savingGroupService.userEnrolledGroups(userId);
+
+            const groups = userInGroups?.groups;
+
+             // Filter groups and extract information
+             const filteredGroups = groups.map((grp: any) => {
+                return grp?.group;
+            });
+            res.json(filteredGroups);
+
+
+        }catch(err){
+            next(err);
+        }
+    }
+
     findGroupMembers = async (req: Request, res: Response, next: NextFunction) => {
         try{
 
@@ -81,7 +103,10 @@ export class SavingGroupController{
                 throw new RecordNotFoundException('Group record not found');
             }
             const members = await savingGroupService.findGroupMembers(groupId as string);
-            res.json(members);
+            res.json({
+                group,
+                members
+            });
 
         }catch(err){
             console.log(err);
