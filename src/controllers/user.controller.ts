@@ -41,12 +41,6 @@ export class UserController{
             res.json(user); 
 
         }catch(error){
-            // next(new ApiError(
-            //     'Something went wrong',
-            //     300,
-            //     'API Error',
-            //     error
-            // ));
             next(error);
         }
     }
@@ -185,5 +179,19 @@ export class UserController{
             message: 'ok',
             users
         });    
+    }
+
+    searchUserByNameOrUniqueIdentity = async (req: Request, res: Response, next: NextFunction) => {
+        try{
+            const {searchParams} = req.query;
+            if(!searchParams){
+                return res.json([]);
+            }
+            const result = await userService.searchUserByNameOrUniqueIdentity(searchParams as string);
+            res.json(result);
+
+        }catch(err){
+            next(err);
+        }
     }
 }

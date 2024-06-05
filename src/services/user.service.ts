@@ -119,5 +119,24 @@ export class UserService {
     listUsers = async(): Promise <User []> => {
         return db.user.findMany();
     }
+
+
+    //search for member or user
+    searchUserByNameOrUniqueIdentity = async (searchParams: string): Promise <User []> => {
+        return await db.user.findMany({
+            where:{
+                OR: [
+                    {
+                        fullname: {
+                            contains: searchParams.toLocaleLowerCase()
+                        }
+                    },
+                    {
+                        uniqueIdentity: searchParams
+                    }
+                ].filter(Boolean)
+            }
+        })
+    }
 }
 
