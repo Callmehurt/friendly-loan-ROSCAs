@@ -13,13 +13,10 @@ export class ContributionService{
                     userId,
                     groupId,
                     amount,
-                    contributionDate: ''
+                    contributionDate: new Date()
                 }
             })
         });
-
-        
-        return null;
     }
 
 }

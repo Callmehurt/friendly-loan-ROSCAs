@@ -31,3 +31,12 @@ export const SavingGroupValidation = (body: {name: string, description: string})
 
     return schema.validate(body);
 }
+
+export const ContributionValidation = (body: {groupId: string, amount: number}) => {
+    const schema = Joi.object({
+        groupId: Joi.string().required().label('Group ID'),
+        amount: Joi.number().precision(2).required()
+    })
+
+    return schema.validate(body);
+}

@@ -41,6 +41,7 @@ app.use(cookieParser());
 //routes
 app.use('/api', rootRouter)
 
+
 Sentry.setupExpressErrorHandler(app);
 
 //route not found middleware
