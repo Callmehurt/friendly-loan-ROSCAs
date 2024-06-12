@@ -83,6 +83,13 @@ export class SavingGroupService{
         return await db.savingGroup.findFirst({
             where: {
                 id: groupId
+            },
+            include: {
+                contributions: {
+                    include: {
+                        user: true
+                    }
+                }
             }
         });
     }
@@ -149,9 +156,29 @@ export class SavingGroupService{
             include:{
                 groups: {
                     include: {
-                        group: true
+                        group: {
+                            include: {
+                                contributions: {
+                                    include: {
+                                        user: true
+                                    }
+                                }
+                            }
+                        },
                     }
-                }
+                },
+                contributions: true
+            }
+        })
+    }
+
+
+    //find user in group
+    userInGroupCheck = async (userId: number, groupId: string): Promise <SavingGroup | null> => {
+        return await db.savingGroup.findFirst({
+            where: {
+                id: groupId,
+                userId: userId
             }
         })
     }

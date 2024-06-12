@@ -165,4 +165,20 @@ export class ConflictException extends AppError{
     }
 }
 
+export class ContributionConflictException extends AppError{
+
+    constructor(
+        message: string = 'User already contributed in the group for the current month',
+        errorCode: ErrorCodes = ErrorCodes.CONFLICT,
+        description: string = 'Conflict error',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
 

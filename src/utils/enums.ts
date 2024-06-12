@@ -14,3 +14,17 @@ export enum ErrorCodes{
     CONFLICT = 409,
     RECORD_NOT_FOUND = 703 
 }
+
+export enum LoanStatus {
+    PENDING = "pending",
+    REJECTED = "rejected",
+    ACTIVE = "active",
+    COMPLETED = "completed"
+}
+
+export enum LoanGuarantorStatus {
+    REQUESTED = "requested",
+    APPROVED = "approved",
+    REJECTED = "rejected"
+  }
+  

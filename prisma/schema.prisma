@@ -23,6 +23,13 @@ enum LoanStatus {
   completed
 }
 
+// Loan gurantor status
+enum LoanGuarantorStatus {
+  requested
+  approved
+  rejected
+}
+
 //models
 model User{
   id Int @id @default(autoincrement())
@@ -41,6 +48,8 @@ model User{
   addedMembers GroupMembers[] @relation("UserAddedMembers")
   loans Loan[]
   contributions Contribution[]
+  guarantorRequests LoanGuarantors[] @relation("guarantor")
+
   @@map("users") 
 }
 
@@ -74,7 +83,7 @@ model Contribution {
   id              Int        @id @default(autoincrement())
   userId          Int
   groupId         String
-  paymentId       String?      
+  paymentId       String      
   amount          Decimal     @db.Decimal(10, 2)
   contributionDate DateTime   @default(now())
   createdAt       DateTime    @default(now())
@@ -86,12 +95,12 @@ model Contribution {
 
 model Loan {
   id             Int            @id @default(autoincrement())
-  reference      String @unique 
+  reference      String         @unique @default(uuid())
   userId         Int
   groupId        String
   principalAmount Decimal        @db.Decimal(10, 2)
-  interestRate   Decimal        @db.Decimal(5, 2)
-  loanStartDate  DateTime
+  interestRate   Decimal         @db.Decimal(5, 2)
+  loanStartDate  DateTime?
   loanEndDate    DateTime?
   status         LoanStatus     @default(active)
   createdAt      DateTime       @default(now())
@@ -101,6 +110,19 @@ model Loan {
   payments       LoanPayment[]
 
   @@map("loans")
+}
+
+model LoanGuarantors {
+  id             Int @id() @default(autoincrement())
+  loanId         Int
+  guarantorId    Int
+  status         LoanGuarantorStatus @default(requested)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  guarantor      User @relation("guarantor",fields: [guarantorId], references: [id]) 
+
+  @@unique([loanId, guarantorId])
+  @@map("loan_guarantors")
 }
 
 model LoanPayment {

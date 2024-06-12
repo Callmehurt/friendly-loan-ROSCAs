@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `contributions` ADD COLUMN `paymentId` VARCHAR(191) NULL,
+    MODIFY `contributionDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);

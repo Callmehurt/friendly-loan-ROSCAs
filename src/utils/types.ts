@@ -1,4 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
+import { LoanStatus } from "./enums";
 
 export interface User{
     id: number;
@@ -49,4 +50,28 @@ export interface Contribution{
     groupId: string;
     amount: Decimal;
     contributionDate: Date;
+    paymentId: string;
+}
+
+export interface Loan {
+    id: number;
+    reference: string;
+    userId: number;
+    groupId: string;
+    principalAmount: Decimal;
+    interestRate: Decimal;
+    loanStartDate: Date;
+    loanEndDate: Date;
+    status: LoanStatus; 
+}
+
+export interface LoanData {
+    userId: number;
+    groupId: string;
+    principalAmount: Decimal;
+    interestRate: Decimal;
+    loanStartDate: Date;
+    loanEndDate: Date;
+    status: LoanStatus; 
+    guarantorIds?: number[]
 }

@@ -11,5 +11,8 @@ export const errorMiddleware = (error: AppError, req: Request, res: Response, ne
 }
 
 export const routeNotFoundMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    res.status(404).send('Route does not exist');
+    res.status(404).send({
+        message: 'Route does not exist',
+        errorCode: 404
+    });
 }

@@ -7,5 +7,6 @@ const contributionRouter: Router = Router();
 const contributionController: ContributionController = new ContributionController();
 
 contributionRouter.post('/user/contribute', verifyJWT , contributionController.registerContribution);
+contributionRouter.get('/user/month/contribution/:groupId', verifyJWT , contributionController.findUsersThisMonthsContrubution);
 
 export default contributionRouter;

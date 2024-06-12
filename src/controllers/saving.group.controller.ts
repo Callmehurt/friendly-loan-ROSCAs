@@ -109,7 +109,6 @@ export class SavingGroupController{
             });
 
         }catch(err){
-            console.log(err);
             next(err);
         }
     }
