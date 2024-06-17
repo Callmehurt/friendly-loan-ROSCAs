@@ -12,7 +12,9 @@ export enum ErrorCodes{
     UNAUTHORIZED = 401,
     INVALID_TOKEN = 403,
     CONFLICT = 409,
-    RECORD_NOT_FOUND = 703 
+    RECORD_NOT_FOUND = 703,
+    INVALID_ACTION = 704,
+    GUARANTOR_NEED_ERROR = 705 
 }
 
 export enum LoanStatus {

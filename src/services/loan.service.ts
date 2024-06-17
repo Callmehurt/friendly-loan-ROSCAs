@@ -1,12 +1,34 @@
 import { Loan } from "@prisma/client";
 import { db } from "../utils/db.server";
 import { LoanData } from "../utils/types";
+import { number } from "joi";
 
 
 export class LoanService{
 
+    //provide interest rate
+    fetchInterestRate = async (principalAmount: number): Promise <Number | null> => {
+        switch(true){
+            case principalAmount <= 100:
+                return null;
+            case principalAmount <= 200:
+                return 2.33;
+            case principalAmount <= 300:
+                return 2.67;
+            case principalAmount <= 400:
+                return 3.00;
+            case principalAmount <= 500:
+                return 3.33;            
+            case principalAmount <= 1000:
+                return 12.00;            
+            default:
+                return 15.00;    
+
+        }
+    } 
+
     requestLoan = async (data: LoanData): Promise <Loan | null> => {
-        const {userId, groupId, principalAmount, interestRate, loanStartDate, loanEndDate, status} = data;
+        const {userId, groupId, principalAmount, interestRate} = data;
         return await db.$transaction( async (tx) => {
             const newLoan = await tx.loan.create({
                 data: {
@@ -14,9 +36,6 @@ export class LoanService{
                     groupId,
                     principalAmount,
                     interestRate,
-                    loanStartDate,
-                    loanEndDate,
-                    status
                 }
             })
 

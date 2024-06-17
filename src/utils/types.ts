@@ -70,8 +70,8 @@ export interface LoanData {
     groupId: string;
     principalAmount: Decimal;
     interestRate: Decimal;
-    loanStartDate: Date;
-    loanEndDate: Date;
-    status: LoanStatus; 
+    loanStartDate?: Date;
+    loanEndDate?: Date;
+    status?: LoanStatus; 
     guarantorIds?: number[]
 }

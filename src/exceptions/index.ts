@@ -181,4 +181,35 @@ export class ContributionConflictException extends AppError{
     }
 }
 
+export class InvalidActionException extends AppError{
+
+    constructor(
+        message: string,
+        errorCode: ErrorCodes = ErrorCodes.INVALID_ACTION,
+        description: string = 'Invalid action',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+export class LoanGuarantorException extends AppError{
+
+    constructor(
+        message: string = 'Loan guarantors need for the requested amount',
+        errorCode: ErrorCodes = ErrorCodes.GUARANTOR_NEED_ERROR,
+        description: string = 'Loan request exception',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
 

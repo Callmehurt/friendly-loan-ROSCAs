@@ -36,6 +36,16 @@ export class ContributionService{
                 }
             },
         })
-    } 
+    }
+    
+    findUsersTotalContributionInGroup = async (userId: number, groupId: string): Promise <Contribution []> => {
+        
+        return await db.contribution.findMany({
+            where: {
+                userId: userId,
+                groupId: groupId
+            }
+        });
+    }
 
 }

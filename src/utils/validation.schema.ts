@@ -41,3 +41,13 @@ export const ContributionValidation = (body: {groupId: string, amount: number, p
 
     return schema.validate(body);
 }
+
+export const LoanRequestValidation = (body: {groupId: string, principalAmount: number, guarantorIds: number[]}) => {
+    const schema = Joi.object({
+        groupId: Joi.string().required().label('Group ID'),
+        principalAmount: Joi.number().required().label('Principal Amount'),
+        guarantorIds: Joi.array().label('Guarantors')
+    });
+
+    return schema.validate(body);
+}
