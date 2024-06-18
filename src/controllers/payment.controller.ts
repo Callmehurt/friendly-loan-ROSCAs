@@ -9,7 +9,7 @@ export class PaymentController {
 
         const paymentIntent = await stripePayment.paymentIntents.create({
             amount: amount * 100, // Convert amount to cents
-            currency: 'usd',
+            currency: 'GBP',
             metadata: { 
                 customerEmail
             },

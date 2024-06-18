@@ -28,7 +28,7 @@ export class ContributionController{
             }
 
             //check if user contributed already for this month in a group
-            const thisMonthContribution = await contributionService.findUsersThisMonthsContrubution(userId, groupId);
+            const thisMonthContribution = await contributionService.findUsersThisMonthsContribution(userId, groupId);
             if(thisMonthContribution){
                 throw new ContributionConflictException();
             }
@@ -52,7 +52,7 @@ export class ContributionController{
             const userId = parseInt(req.userId as string, 10);
             const {groupId} = req.params;
 
-            const data = await contributionService.findUsersThisMonthsContrubution(userId as number, groupId as string);
+            const data = await contributionService.findUsersThisMonthsContribution(userId as number, groupId as string);
 
             res.json(data);
 

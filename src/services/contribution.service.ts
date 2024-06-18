@@ -22,7 +22,7 @@ export class ContributionService{
         });
     }
 
-    findUsersThisMonthsContrubution = async (userId: number, groupId: string): Promise <Contribution | null> => {
+    findUsersThisMonthsContribution = async (userId: number, groupId: string): Promise <Contribution | null> => {
         const currentMonth = moment();
         const startDate = currentMonth.startOf('month').format('YYYY-MM-DD')
         const endDate = currentMonth.endOf('month').format('YYYY-MM-DD')
