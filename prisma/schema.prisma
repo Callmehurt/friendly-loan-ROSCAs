@@ -102,12 +102,13 @@ model Loan {
   interestRate   Decimal         @db.Decimal(5, 2)
   loanStartDate  DateTime?
   loanEndDate    DateTime?
-  status         LoanStatus     @default(active)
+  status         LoanStatus     @default(pending)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   user           User           @relation(fields: [userId], references: [id])
   group          SavingGroup    @relation(fields: [groupId], references: [id])
   payments       LoanPayment[]
+  guarantors     LoanGuarantors[]
 
   @@map("loans")
 }
@@ -119,7 +120,8 @@ model LoanGuarantors {
   status         LoanGuarantorStatus @default(requested)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  guarantor      User @relation("guarantor",fields: [guarantorId], references: [id]) 
+  guarantor      User @relation("guarantor",fields: [guarantorId], references: [id])
+  loan           Loan @relation(fields: [loanId], references: [id])  
 
   @@unique([loanId, guarantorId])
   @@map("loan_guarantors")

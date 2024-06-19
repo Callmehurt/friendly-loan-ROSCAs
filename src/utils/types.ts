@@ -69,7 +69,7 @@ export interface LoanData {
     userId: number;
     groupId: string;
     principalAmount: Decimal;
-    interestRate: Decimal;
+    interestRate: any;
     loanStartDate?: Date;
     loanEndDate?: Date;
     status?: LoanStatus; 

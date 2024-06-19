@@ -25,6 +25,26 @@ export class LoanController{
         }
     }
 
+    fetchLoans = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const userId = parseInt(req.userId as string, 10);
+
+            const pendingLoans = await loanService.usersPendingLoans(userId);
+            const activeLoans = await loanService.usersActiveLoans(userId);
+            const rejectedLoans = await loanService.usersRejectedLoans(userId);
+            const completedLoans = await loanService.usersCompletedLoans(userId);
+            res.json({
+                pendingLoans,
+                activeLoans,
+                rejectedLoans,
+                completedLoans
+            });
+        }catch(err){
+            next(err);
+        }
+    }
+
     createLoanRequest = async (req: any, res: Response, next: NextFunction) => {
         try{
 
@@ -59,13 +79,19 @@ export class LoanController{
 
             await this.checkIfUserNeedGuarantor(totalContributionInAmount, principalAmount);
 
+            const loanData = {
+                groupId: groupId,
+                userId: userId,
+                principalAmount: principalAmount,
+                interestRate: interestRate
+            }
+
+            const loan = await loanService.requestLoan(loanData);
+
             res.json({
-                userId,
-                groupId,
-                principalAmount,
-                interestRate,
-                guarantorIds,
-            })
+                message: 'Loan request successfull',
+                loan: loan
+            });
 
             // const currentDay = moment();
 

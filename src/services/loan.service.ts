@@ -2,6 +2,8 @@ import { Loan } from "@prisma/client";
 import { db } from "../utils/db.server";
 import { LoanData } from "../utils/types";
 import { number } from "joi";
+import { Decimal } from "@prisma/client/runtime/library";
+import { LoanStatus } from "../utils/enums";
 
 
 export class LoanService{
@@ -54,5 +56,57 @@ export class LoanService{
 
             return newLoan;
         })
+    }
+
+    usersPendingLoans = async (userId: number): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                userId: userId,
+                status: LoanStatus.PENDING
+            },
+            include: {
+                group: true,
+                guarantors: true
+            }
+        });
+    }
+
+    usersActiveLoans = async (userId: number): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                userId: userId,
+                status: LoanStatus.ACTIVE
+            },
+            include: {
+                group: true,
+                guarantors: true
+            }
+        });
+    }
+
+    usersRejectedLoans = async (userId: number): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                userId: userId,
+                status: LoanStatus.REJECTED
+            },
+            include: {
+                group: true,
+                guarantors: true
+            }
+        });
+    }
+
+    usersCompletedLoans = async (userId: number): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                userId: userId,
+                status: LoanStatus.COMPLETED
+            },
+            include: {
+                group: true,
+                guarantors: true
+            }
+        });
     }
 }
