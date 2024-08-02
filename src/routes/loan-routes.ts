@@ -12,6 +12,9 @@ loanRoutes.post('/user/request/loan', verifyJWT , loanController.createLoanReque
 //fetch user's pending loans
 loanRoutes.get('/my/all/loans', verifyJWT , loanController.fetchLoans);
 
+//user's loan guarantor requests
+loanRoutes.get('/my/all/loan/guarantor/requests', verifyJWT , loanController.fetchLoanGuarantorRequests);
+
 loanRoutes.post('/fetch/interest/rate', loanController.calculateInterestRate);
 
 export default loanRoutes;

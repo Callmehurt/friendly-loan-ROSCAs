@@ -1,8 +1,7 @@
-import { Loan } from "@prisma/client";
+import { Loan, User } from "@prisma/client";
 import { db } from "../utils/db.server";
-import { LoanData } from "../utils/types";
+import { LoanData, LoanGuarantors } from "../utils/types";
 import { number } from "joi";
-import { Decimal } from "@prisma/client/runtime/library";
 import { LoanStatus } from "../utils/enums";
 
 
@@ -30,7 +29,7 @@ export class LoanService{
     } 
 
     requestLoan = async (data: LoanData): Promise <Loan | null> => {
-        const {userId, groupId, principalAmount, interestRate} = data;
+        const {userId, groupId, principalAmount, interestRate, guarantorIds} = data;
         return await db.$transaction( async (tx) => {
             const newLoan = await tx.loan.create({
                 data: {
@@ -42,8 +41,8 @@ export class LoanService{
             })
 
             // Create loan guarantor entries (if provided)
-            if (data.guarantorIds) {
-                const guarantorPromises = data.guarantorIds.map((guarantorId) =>
+            if (guarantorIds) {
+                const guarantorPromises = guarantorIds.map((guarantorId) =>
                     tx.loanGuarantors.create({
                         data: { 
                             loanId: newLoan.id, 
@@ -106,6 +105,14 @@ export class LoanService{
             include: {
                 group: true,
                 guarantors: true
+            }
+        });
+    }
+
+    guarantorRequests = async (userId: number): Promise <any[]> => {
+        return await db.loanGuarantors.findMany({
+            where: {
+                guarantorId: userId
             }
         });
     }

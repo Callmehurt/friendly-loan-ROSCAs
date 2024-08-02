@@ -45,6 +45,18 @@ export class LoanController{
         }
     }
 
+    fetchLoanGuarantorRequests = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const userId = parseInt(req.userId as string, 10);
+
+            const requests = await loanService.guarantorRequests(userId);
+            res.json(requests);
+        }catch(err){
+            next(err);
+        }
+    }
+
     createLoanRequest = async (req: any, res: Response, next: NextFunction) => {
         try{
 
@@ -79,15 +91,18 @@ export class LoanController{
 
             await this.checkIfUserNeedGuarantor(totalContributionInAmount, principalAmount);
 
+            //loan data
             const loanData = {
                 groupId: groupId,
                 userId: userId,
                 principalAmount: principalAmount,
-                interestRate: interestRate
+                interestRate: interestRate,
+                guarantorIds: guarantorIds
+
             }
 
             const loan = await loanService.requestLoan(loanData);
-
+            
             res.json({
                 message: 'Loan request successfull',
                 loan: loan

@@ -1,5 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
-import { LoanStatus } from "./enums";
+import { LoanGuarantorStatus, LoanStatus } from "./enums";
 
 export interface User{
     id: number;
@@ -74,4 +74,11 @@ export interface LoanData {
     loanEndDate?: Date;
     status?: LoanStatus; 
     guarantorIds?: number[]
+}
+
+export interface LoanGuarantors {
+    id: number;
+    loanId: number;
+    guarantorId: number;
+    status: LoanGuarantorStatus;
 }

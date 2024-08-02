@@ -45,8 +45,9 @@ CREATE TABLE `contributions` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
     `groupId` VARCHAR(191) NOT NULL,
+    `paymentId` VARCHAR(191) NOT NULL,
     `amount` DECIMAL(10, 2) NOT NULL,
-    `contributionDate` DATETIME(3) NOT NULL,
+    `contributionDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
@@ -55,16 +56,31 @@ CREATE TABLE `contributions` (
 -- CreateTable
 CREATE TABLE `loans` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `reference` VARCHAR(191) NOT NULL,
     `userId` INTEGER NOT NULL,
     `groupId` VARCHAR(191) NOT NULL,
     `principalAmount` DECIMAL(10, 2) NOT NULL,
     `interestRate` DECIMAL(5, 2) NOT NULL,
-    `loanStartDate` DATETIME(3) NOT NULL,
+    `loanStartDate` DATETIME(3) NULL,
     `loanEndDate` DATETIME(3) NULL,
-    `status` ENUM('pending', 'rejected', 'active', 'completed') NOT NULL DEFAULT 'active',
+    `status` ENUM('pending', 'rejected', 'active', 'completed') NOT NULL DEFAULT 'pending',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `loans_reference_key`(`reference`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `loan_guarantors` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `loanId` INTEGER NOT NULL,
+    `guarantorId` INTEGER NOT NULL,
+    `status` ENUM('requested', 'approved', 'rejected') NOT NULL DEFAULT 'requested',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `loan_guarantors_loanId_guarantorId_key`(`loanId`, `guarantorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -104,6 +120,12 @@ ALTER TABLE `loans` ADD CONSTRAINT `loans_userId_fkey` FOREIGN KEY (`userId`) RE
 
 -- AddForeignKey
 ALTER TABLE `loans` ADD CONSTRAINT `loans_groupId_fkey` FOREIGN KEY (`groupId`) REFERENCES `saving_groups`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `loan_guarantors` ADD CONSTRAINT `loan_guarantors_guarantorId_fkey` FOREIGN KEY (`guarantorId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `loan_guarantors` ADD CONSTRAINT `loan_guarantors_loanId_fkey` FOREIGN KEY (`loanId`) REFERENCES `loans`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `loan_payments` ADD CONSTRAINT `loan_payments_loanId_fkey` FOREIGN KEY (`loanId`) REFERENCES `loans`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
