@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 export const UserValidation = (body: any) => {
     const schema = Joi.object({
+        profile: Joi.string(),
         fullname: Joi.string().required(),
         address: Joi.string().required(),
         phone: Joi.string().required()

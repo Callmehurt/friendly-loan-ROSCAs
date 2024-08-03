@@ -7,7 +7,7 @@ export class SavingGroupService{
     // create saving group
     create = async (data: SavingGroup): Promise <CreateGroupAndEnrollSelfResult> => {
 
-        const {id, name, description, userId} = data;
+        const {id, name, description, userId, thumbnail, publicId} = data;
 
         return await db.$transaction( async (tx) => {
 
@@ -17,7 +17,9 @@ export class SavingGroupService{
                     id,
                     name,
                     description,
-                    userId
+                    userId,
+                    thumbnail,
+                    publicId
                 },
                 include: {
                     user: {
@@ -79,7 +81,7 @@ export class SavingGroupService{
     }
 
     //find specific group
-    findGroup = async (groupId: string): Promise <SavingGroup | null> => {
+    findGroup = async (groupId: string): Promise <Partial<SavingGroup | null>> => {
         return await db.savingGroup.findFirst({
             where: {
                 id: groupId

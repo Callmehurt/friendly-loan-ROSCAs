@@ -2,6 +2,8 @@
 CREATE TABLE `users` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `uniqueIdentity` VARCHAR(191) NOT NULL,
+    `profile` VARCHAR(191) NULL,
+    `publicId` VARCHAR(191) NULL,
     `fullname` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
@@ -21,6 +23,7 @@ CREATE TABLE `users` (
 -- CreateTable
 CREATE TABLE `saving_groups` (
     `id` VARCHAR(191) NOT NULL,
+    `thumbnail` VARCHAR(191) NULL,
     `name` VARCHAR(191) NOT NULL,
     `description` LONGTEXT NOT NULL,
     `userId` INTEGER NOT NULL,

@@ -3,6 +3,8 @@ import { LoanGuarantorStatus, LoanStatus } from "./enums";
 
 export interface User{
     id: number;
+    profile: string | null;
+    publicId: string | null;
     uniqueIdentity: string;
     fullname: string;
     address: string,
@@ -14,6 +16,8 @@ export interface User{
 
 export interface UserWithGroup{
     id: number;
+    profile: string | null;
+    publicId: string | null;
     uniqueIdentity: string;
     fullname: string;
     address: string,
@@ -27,6 +31,8 @@ export interface UserWithGroup{
 
 export interface SavingGroup{
     id: string;
+    thumbnail: string | null;
+    publicId: string | null;
     name: string;
     description: string;
     userId: number;
@@ -82,3 +88,8 @@ export interface LoanGuarantors {
     guarantorId: number;
     status: LoanGuarantorStatus;
 }
+
+export interface Image {
+    url: string;
+    public_id: string;
+  }

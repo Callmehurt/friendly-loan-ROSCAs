@@ -4,6 +4,9 @@ import { Utils } from "../utils";
 import { InvalidCredentialError, InvalidTokenException, UnauthorizedException, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
 import { UserLoginValidation, UserValidation } from "../utils/validation.schema";
 import jwt from 'jsonwebtoken';
+import fs from 'fs'
+import { cloudinary } from "../utils/cloudinary";
+import { Image } from "../utils/types";
 
 const userService: UserService = new UserService();
 const utils: Utils = new Utils();
@@ -27,20 +30,31 @@ export class UserController{
             if(error){
                 throw new ValidationError(`${error.details[0].message}`, error);
             }
+            
+            const file = req.file;
+            const path: string = file?.path as string;
 
-            // const data = {
-            //     fullname: fullname,
-            //     email: email,
-            //     password: password,
-            //     address: address,
-            //     phone
-            // }
+            //cloud upload
+            const result = await cloudinary.uploader.upload(path);
+
+            const imageData: Image = {
+              url: result.secure_url,
+              public_id: result.public_id,
+            };
+                    
+            //Delete local file
+            fs.unlinkSync(path);
+
+            req.body.profile = imageData.url;
+            req.body.publicId = imageData.public_id;
 
             const user = await userService.createStudent(req.body);
 
             res.json(user); 
 
         }catch(error){
+            console.log(error);
+            
             next(error);
         }
     }

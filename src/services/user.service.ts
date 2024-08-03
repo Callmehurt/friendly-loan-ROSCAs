@@ -74,7 +74,7 @@ export class UserService {
 
     createStudent = async (data: Omit<User, "id">): Promise <Partial<User | null>> => {
 
-        const { fullname, address, email, password, phone} = data;
+        const { fullname, address, email, password, phone, profile, publicId} = data;
 
         //hashed password
         const hashedPassword = await utils.generateHashPassword(password);
@@ -88,7 +88,9 @@ export class UserService {
                     address,
                     email,
                     password: hashedPassword,
-                    phone
+                    phone,
+                    profile,
+                    publicId
                 },
                 select: {
                     id: true,
@@ -98,6 +100,7 @@ export class UserService {
                     email: true,
                     phone: true,
                     role: true,
+                    profile: true,
                     createdAt: true,
                     updatedAt: true
                 }

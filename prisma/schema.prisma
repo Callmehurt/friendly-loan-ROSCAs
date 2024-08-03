@@ -34,6 +34,8 @@ enum LoanGuarantorStatus {
 model User{
   id Int @id @default(autoincrement())
   uniqueIdentity String @unique
+  profile String?
+  publicId String?
   fullname String
   address String 
   email String @unique
@@ -55,6 +57,8 @@ model User{
 
 model SavingGroup{
   id String @id @unique
+  thumbnail String?
+  publicId String?
   name String
   description String @db.LongText
   user User @relation(fields: [userId], references: [id])

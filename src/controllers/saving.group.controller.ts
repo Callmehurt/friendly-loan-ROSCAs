@@ -4,7 +4,9 @@ import { SavingGroupValidation } from "../utils/validation.schema";
 import { ConflictException, RecordNotFoundException, ValidationError } from "../exceptions";
 import { Utils } from "../utils";
 import { UserService } from "../services/user.service";
-import { SavingGroup } from "../utils/types";
+import { SavingGroup, Image } from "../utils/types";
+import { cloudinary } from "../utils/cloudinary";
+import fs from 'fs';
 
 const savingGroupService: SavingGroupService = new SavingGroupService();
 const userService: UserService = new UserService();
@@ -21,13 +23,29 @@ export class SavingGroupController{
                 throw new ValidationError(`${error.details[0].message}`, error);
             }
 
+            const file = req.file;
+            const path: string = file?.path as string;
+
+            //cloud upload
+            const result = await cloudinary.uploader.upload(path);
+
+            const imageData: Image = {
+              url: result.secure_url,
+              public_id: result.public_id,
+            };
+                    
+            //Delete local file
+            fs.unlinkSync(path);
+
             const ranGroupId = await utils.generateRandomId(10 as number);
 
             const data = {
                 id: ranGroupId,
                 name: req.body.name,
                 description: req.body.description,
-                userId: req.userId
+                userId: req.userId,
+                thumbnail: imageData.url,
+                publicId: imageData.public_id
             }
 
             const group = await savingGroupService.create(data);
