@@ -26,6 +26,11 @@ export const UserLoginValidation = (body: {email: string, password: string}) => 
 export const SavingGroupValidation = (body: {name: string, description: string}) => {
 
     const schema = Joi.object({
+        thumbnail: Joi.object({
+            name: Joi.string().required(),
+            size: Joi.number().positive().required(),
+            type: Joi.string().required(),
+          }),
         name: Joi.string().min(5).required(),
         description: Joi.string().required()
     });

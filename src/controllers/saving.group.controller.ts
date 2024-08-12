@@ -18,12 +18,22 @@ export class SavingGroupController{
 
         try{
 
+            //grab a file from the request
+            const file = req.file;
+
+            const thumbnail = {
+                name: file?.originalname,
+                size: file?.size,
+                type: file?.mimetype
+            }
+
+            req.body.thumbnail = thumbnail;
+
             const {error} = SavingGroupValidation(req.body);
             if(error){
                 throw new ValidationError(`${error.details[0].message}`, error);
             }
 
-            const file = req.file;
             const path: string = file?.path as string;
 
             //cloud upload
