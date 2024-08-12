@@ -61,6 +61,8 @@ export class UserService {
             select: {
                 id: true,
                 uniqueIdentity: true,
+                profile: true,
+                publicId: true,
                 fullname: true,
                 address: true,
                 email: true,
