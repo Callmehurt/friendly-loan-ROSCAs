@@ -10,7 +10,8 @@ const loanRoutes: Router = Router();
 loanRoutes.post('/user/request/loan', verifyJWT , loanController.createLoanRequest);
 
 //fetch user's pending loans
-loanRoutes.get('/my/all/loans', verifyJWT , loanController.fetchLoans);
+loanRoutes.get('/my/categorized/loans', verifyJWT , loanController.fetchLoans);
+loanRoutes.get('/my/all/loans', verifyJWT , loanController.fetchAllLoans);
 
 //user's loan guarantor requests
 loanRoutes.get('/my/all/loan/guarantor/requests', verifyJWT , loanController.fetchLoanGuarantorRequests);

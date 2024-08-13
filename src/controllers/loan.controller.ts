@@ -45,6 +45,19 @@ export class LoanController{
         }
     }
 
+    fetchAllLoans = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const userId = parseInt(req.userId as string, 10);
+
+            const allLoans = await loanService.usersAllLoans(userId);
+            res.json(allLoans);
+
+        }catch(err){
+            next(err);
+        }
+    }
+
     fetchLoanGuarantorRequests = async (req: any, res: Response, next: NextFunction) => {
         try{
 

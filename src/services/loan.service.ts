@@ -109,6 +109,18 @@ export class LoanService{
         });
     }
 
+    usersAllLoans = async (userId: number): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                userId: userId,
+            },
+            include: {
+                group: true,
+                guarantors: true
+            }
+        });
+    }
+
     guarantorRequests = async (userId: number): Promise <any[]> => {
         return await db.loanGuarantors.findMany({
             where: {
