@@ -102,7 +102,10 @@ export class LoanController{
             // check for user's contribution amount status/ should be > £100
             const {totalContributionInAmount} = await this.checkContributionAmountStatus(userId, groupId);
 
-            await this.checkIfUserNeedGuarantor(totalContributionInAmount, principalAmount);
+            if(guarantorIds.length == 0){
+                await this.checkIfUserNeedGuarantor(totalContributionInAmount, principalAmount);
+            }
+
 
             //loan data
             const loanData = {
@@ -167,4 +170,41 @@ export class LoanController{
             throw new LoanGuarantorException();
         }
     }
+
+    //calculate total loan amount & interest amount
+    calculateTotalLoanInterestAmount = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const userId = parseInt(req.userId as string, 10);
+            const totalLoanAmount = await loanService.totalLoanAmount(userId);
+            const totalInterestAmount = await loanService.totalInterestAmount(userId);
+            res.json({
+                totalLoanAmount,
+                totalInterestAmount
+            });
+
+        }catch(err){
+            next(err);
+        }
+    }
+
+    //approve loan request
+    approveLoanRequest = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const {loanId, decision} = req.body;
+
+            const loan = await loanService.manageLoanRequest(loanId, decision);
+
+            res.json({
+                message: 'Loan request approved',
+                loan: loan
+            });
+
+        }catch(err){
+            next(err);
+        }
+    }
+
+
 }

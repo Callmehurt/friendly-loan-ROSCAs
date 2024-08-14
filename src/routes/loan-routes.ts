@@ -16,6 +16,11 @@ loanRoutes.get('/my/all/loans', verifyJWT , loanController.fetchAllLoans);
 //user's loan guarantor requests
 loanRoutes.get('/my/all/loan/guarantor/requests', verifyJWT , loanController.fetchLoanGuarantorRequests);
 
+//user's total loan amount & interest amount
+loanRoutes.get('/my/all/total/loans', verifyJWT , loanController.calculateTotalLoanInterestAmount);
+
+
+//interest rate
 loanRoutes.post('/fetch/interest/rate', loanController.calculateInterestRate);
 
 export default loanRoutes;

@@ -1,8 +1,8 @@
 import { Loan, User } from "@prisma/client";
 import { db } from "../utils/db.server";
 import { LoanData, LoanGuarantors } from "../utils/types";
-import { number } from "joi";
 import { LoanStatus } from "../utils/enums";
+import { Decimal } from "@prisma/client/runtime/library";
 
 
 export class LoanService{
@@ -125,7 +125,76 @@ export class LoanService{
         return await db.loanGuarantors.findMany({
             where: {
                 guarantorId: userId
+            },
+            include: {
+                loan: {
+                    include: {
+                        group: true,
+                        user: true
+                    }
+                }
             }
+        });
+    }
+
+    //user's total loan amount
+    totalLoanAmount  = async (userId: number): Promise <number> => {
+        const loans = await db.loan.findMany({
+            where: {
+                userId: userId,
+                status: {
+                    in: [LoanStatus.ACTIVE, LoanStatus.COMPLETED]
+                }
+            },
+            select: {
+                principalAmount: true
+            }
+        });
+    
+        const totalLoanAmount = loans.reduce((total, loan) => total + new Decimal(loan.principalAmount).toNumber(), 0);        
+        return totalLoanAmount;
+    }
+
+    //user's total interest amount
+    totalInterestAmount = async (userId: number): Promise<number> => {
+        const loans = await db.loan.findMany({
+            where: {
+                userId: userId,
+                status: LoanStatus.COMPLETED
+            },
+            select: {
+                principalAmount: true,
+                interestRate: true
+            }
+        });
+
+        const totalInterestAmount = loans.reduce((total, loan) => {
+            const principal = new Decimal(loan.principalAmount).toNumber();
+            const interestRate = new Decimal(loan.interestRate).toNumber();
+
+            // Calculate the interest amount for 1 month
+            return total + (principal * (interestRate/100) * 1);
+        }, 0);
+
+        return totalInterestAmount;
+    }
+
+
+    manageLoanRequest = async (loanId: number, decision: string): Promise<Loan | null> => {
+        const startDate = new Date();
+        
+        return await db.$transaction(async (tx) => {
+            const loan = await tx.loan.update({
+                where: {
+                    id: loanId,
+                },
+                data: {
+                    status: decision == 'active' ? LoanStatus.ACTIVE : LoanStatus.REJECTED,
+                    loanStartDate: startDate,
+                },
+            });
+
+            return loan;
         });
     }
 }

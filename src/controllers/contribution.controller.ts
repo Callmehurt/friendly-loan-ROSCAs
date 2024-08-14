@@ -60,4 +60,17 @@ export class ContributionController{
             next(err);
         }
     }
+
+    //user's current month and till contributions
+    usersTotalContributions = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const userId = parseInt(req.userId as string, 10);
+            const data = await contributionService.usertotalContribution(userId);
+            res.json(data);
+            
+        }catch(err){
+            next(err);
+        }
+    }
 }
