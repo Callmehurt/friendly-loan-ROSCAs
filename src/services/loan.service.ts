@@ -57,6 +57,26 @@ export class LoanService{
         })
     }
 
+    //fetch single loan
+    fetchLoan = async (reference: string): Promise <Loan | null> => {
+        return await db.loan.findUnique({
+            where: {
+                reference: reference
+            },
+            include: {
+                group: true,
+                user: true,
+                guarantors: {
+                    include: {
+                        guarantor: true
+                    }
+                }
+            }
+        });
+    }
+
+
+
     usersPendingLoans = async (userId: number): Promise <Loan[]> => {
         return await db.loan.findMany({
             where: {

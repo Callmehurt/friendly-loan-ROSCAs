@@ -23,4 +23,7 @@ loanRoutes.get('/my/all/total/loans', verifyJWT , loanController.calculateTotalL
 //interest rate
 loanRoutes.post('/fetch/interest/rate', loanController.calculateInterestRate);
 
+//fetch loan by reference
+loanRoutes.get('/fetch/loan/:reference', verifyJWT , loanController.fetchLoan);
+
 export default loanRoutes;

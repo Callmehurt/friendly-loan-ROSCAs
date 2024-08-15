@@ -50,7 +50,7 @@ export class ContributionService{
     }
 
     //user's total contribution in a group in current month & till
-    usertotalContribution = async (userId: number): Promise<{ currentMonth: number, tillNow: number }> => {
+    usertotalContribution = async (userId: number): Promise<{ currentMonth: number, tillNow: number, currentMonthCount: number, tillNowCount: number }> => {
         const contributions = await db.contribution.findMany({
             where: {
                 userId: userId
@@ -65,6 +65,7 @@ export class ContributionService{
         const currentMonth = currentDate.getMonth();
         const currentYear = currentDate.getFullYear();
 
+        //contribution in current month
         const totalCurrentMonth = contributions.reduce((total, contribution) => {
             const contributionDate = new Date(contribution.contributionDate);
             if (contributionDate.getMonth() === currentMonth && contributionDate.getFullYear() === currentYear) {
@@ -73,13 +74,27 @@ export class ContributionService{
             return total;
         }, 0);
 
+
+        //contributions till now
         const totalTillNow = contributions.reduce((total, contribution) => {
             return total + new Decimal(contribution.amount).toNumber();
         }, 0);
 
+
+        //number of contribution in current month
+        const currentMonthCount = contributions.filter(contribution => {
+            const contributionDate = new Date(contribution.contributionDate);
+            return contributionDate.getMonth() === currentMonth && contributionDate.getFullYear() === currentYear;
+        }).length;
+
+        //number of contribution till now
+        const tillNowCount = contributions.length;
+
         return {
             currentMonth: totalCurrentMonth,
-            tillNow: totalTillNow
+            tillNow: totalTillNow,
+            currentMonthCount,
+            tillNowCount
         };
     }
 

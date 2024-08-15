@@ -206,5 +206,18 @@ export class LoanController{
         }
     }
 
+    //fetch loan
+    fetchLoan = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const {reference} = req.params;
+            const loan = await loanService.fetchLoan(reference as string);
+            res.json(loan);
+
+        }catch(err){
+            next(err);
+        }
+    }
+
 
 }
