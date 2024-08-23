@@ -23,11 +23,13 @@ export class UserService {
             },
             select: {
                 id: true,
+                profile: true,
                 fullname: true,
                 address: true,
                 email: true,
                 phone: true,
                 role: true,
+                password: true,
                 createdAt: true,
                 updatedAt: true
             }
@@ -143,5 +145,26 @@ export class UserService {
             }
         })
     }
+
+    // password change
+    changePassword = async (userId: number, newPassword: string): Promise <User | null> => {
+
+        //hashed password
+        const hashedPassword = await utils.generateHashPassword(newPassword);
+
+        return await db.$transaction( async (tx) => {
+            return await tx.user.update({
+                where: {
+                    id: userId
+                },
+                data: {
+                    password: hashedPassword
+                }
+            })
+        })
+
+    }
+
+    
 }
 

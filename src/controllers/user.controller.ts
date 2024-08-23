@@ -59,6 +59,7 @@ export class UserController{
         }
     }
 
+    //login user
     loginUser = async (req: Request, res: Response, next: NextFunction) => {
 
         try{
@@ -205,6 +206,36 @@ export class UserController{
             res.json(result);
 
         }catch(err){
+            next(err);
+        }
+    }
+
+    //password change
+    changePassword = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = parseInt(req.userId as string, 10);
+            const { currentPassword, newPassword } = req.body;
+    
+            const userPromise = userService.findUserById(userId);
+            const [user] = await Promise.all([userPromise]);
+
+            console.log(user);
+            
+    
+            if (!user || !user.password) {
+                throw new InvalidCredentialError("User not found or password is missing");
+            }
+    
+            const isCurrentPasswordValid = await utils.validatePassword(currentPassword, user.password as string);
+    
+            if (!isCurrentPasswordValid) {
+                throw new InvalidCredentialError("Current password is incorrect");
+            }
+    
+            await userService.changePassword(userId, newPassword);
+    
+            res.status(200).json({ message: "Password changed successfully" });
+        } catch (err) {
             next(err);
         }
     }

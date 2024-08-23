@@ -1,9 +1,9 @@
 import { Loan, User } from "@prisma/client";
 import { db } from "../utils/db.server";
-import { LoanData, LoanGuarantors } from "../utils/types";
-import { LoanStatus } from "../utils/enums";
+import { LoanData, LoanGuarantors, LoanPayment } from "../utils/types";
+import { LoanGuarantorStatus, LoanStatus } from "../utils/enums";
 import { Decimal } from "@prisma/client/runtime/library";
-
+import moment from "moment";
 
 export class LoanService{
 
@@ -11,7 +11,7 @@ export class LoanService{
     fetchInterestRate = async (principalAmount: number): Promise <Number | null> => {
         switch(true){
             case principalAmount <= 100:
-                return null;
+                return 0.00;
             case principalAmount <= 200:
                 return 2.33;
             case principalAmount <= 300:
@@ -22,8 +22,10 @@ export class LoanService{
                 return 3.33;            
             case principalAmount <= 1000:
                 return 12.00;            
+            case principalAmount > 1000:
+                return 15.00;            
             default:
-                return 15.00;    
+                return 0.00;    
 
         }
     } 
@@ -64,13 +66,18 @@ export class LoanService{
                 reference: reference
             },
             include: {
-                group: true,
+                group: {
+                    include: {
+                        contributions: true
+                    }
+                },
                 user: true,
                 guarantors: {
                     include: {
                         guarantor: true
                     }
-                }
+                },
+                payments: true
             }
         });
     }
@@ -141,6 +148,7 @@ export class LoanService{
         });
     }
 
+    //user's guarantor requests
     guarantorRequests = async (userId: number): Promise <any[]> => {
         return await db.loanGuarantors.findMany({
             where: {
@@ -177,32 +185,58 @@ export class LoanService{
 
     //user's total interest amount
     totalInterestAmount = async (userId: number): Promise<number> => {
+        
         const loans = await db.loan.findMany({
-            where: {
-                userId: userId,
-                status: LoanStatus.COMPLETED
+            where: { userId: userId },
+            select: { id: true }
+          });
+        
+        const loanIds = loans.map(loan => loan.id);
+        
+        const totalInterest = await db.loanPayment.aggregate({
+            _sum: {
+            interestAmount: true
             },
-            select: {
-                principalAmount: true,
-                interestRate: true
+            where: {
+            loanId: {
+                in: loanIds
+            }
             }
         });
 
-        const totalInterestAmount = loans.reduce((total, loan) => {
-            const principal = new Decimal(loan.principalAmount).toNumber();
-            const interestRate = new Decimal(loan.interestRate).toNumber();
-
-            // Calculate the interest amount for 1 month
-            return total + (principal * (interestRate/100) * 1);
-        }, 0);
+        const totalInterestAmount = totalInterest._sum.interestAmount instanceof Decimal
+                ? totalInterest._sum.interestAmount.toNumber()
+                : 0;
 
         return totalInterestAmount;
     }
 
+    //number of payments done by the user
+    numberOfPayments = async (userId: number): Promise<number> => {
+        const loans = await db.loan.findMany({
+            where: { userId: userId },
+            select: { id: true }
+        });
+    
+        const loanIds = loans.map(loan => loan.id);
+    
+        const paymentCount = await db.loanPayment.count({
+            where: {
+                loanId: {
+                    in: loanIds
+                }
+            }
+        });
+    
+        return paymentCount;
+    }
 
+
+    //manage Loan Request
     manageLoanRequest = async (loanId: number, decision: string): Promise<Loan | null> => {
-        const startDate = new Date();
-        
+        const currentDay = moment();
+        const startDate = currentDay.add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
+        const endDate = currentDay.add(40, 'days').format('YYYY-MM-DD HH:mm:ss')
         return await db.$transaction(async (tx) => {
             const loan = await tx.loan.update({
                 where: {
@@ -210,11 +244,112 @@ export class LoanService{
                 },
                 data: {
                     status: decision == 'active' ? LoanStatus.ACTIVE : LoanStatus.REJECTED,
-                    loanStartDate: startDate,
+                    loanStartDate: new Date(startDate),
+                    loanEndDate: new Date(endDate)
                 },
             });
 
             return loan;
         });
     }
+
+    // all pending loans
+    pendingLoans = async (): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                status: LoanStatus.PENDING
+            },
+            include: {
+                group: true,
+                guarantors: true,
+                user: true
+            }
+        });
+    }
+
+    // all active loans
+    activeLoans = async (): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                status: LoanStatus.ACTIVE
+            },
+            include: {
+                group: true,
+                guarantors: true,
+                user: true
+            }
+        });
+    }
+
+    // all rejected loans
+    rejectedLoans = async (): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                status: LoanStatus.REJECTED
+            },
+            include: {
+                group: true,
+                guarantors: true,
+                user: true
+            }
+        });
+    }
+
+
+    // all completed loans
+    completedLoans = async (): Promise <Loan[]> => {
+        return await db.loan.findMany({
+            where: {
+                status: LoanStatus.COMPLETED
+            },
+            include: {
+                group: true,
+                guarantors: true,
+                user: true
+            }
+        });
+    }
+
+    //guarantor request management
+    //id as in table ID
+    manageGuarantorRequest = async (id: number, decision: string): Promise <any | null> => {
+        
+        const status = decision === 'approved' ? LoanGuarantorStatus.APPROVED : LoanGuarantorStatus.REJECTED;
+        return await db.$transaction(async (tx) => {
+            return await tx.loanGuarantors.update({
+                where: {
+                    id: id
+                },
+                data: {
+                    status: status
+                }
+            });
+        });
+    }   
+
+    // make loan payment
+    makeLoanPayment = async (loanId: number, totalPayment: number, principalAmount: number, interestAmount: number): Promise <LoanPayment | null> => {
+        return await db.$transaction(async (tx) => {
+            await tx.loan.update({
+                where: {
+                    id: loanId
+                },
+                data: {
+                    status: LoanStatus.COMPLETED,
+                }
+            });
+
+            return await tx.loanPayment.create({
+                data: {
+                    loanId,
+                    paymentAmount: totalPayment,
+                    paymentDate: new Date(),
+                    interestAmount: interestAmount,
+                    principalAmount: principalAmount
+                }
+            });
+        });
+    }
+
+
 }

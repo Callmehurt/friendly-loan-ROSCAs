@@ -93,3 +93,12 @@ export interface Image {
     url: string;
     public_id: string;
   }
+
+export interface LoanPayment {
+    id: number;
+    loanId: number;
+    principalAmount: Decimal;
+    paymentDate: Date;
+    interestAmount: Decimal;
+    paymentAmount: Decimal
+}

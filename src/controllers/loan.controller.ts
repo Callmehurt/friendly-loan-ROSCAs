@@ -5,6 +5,7 @@ import { SavingGroupService } from '../services/saving.group.service';
 import { LoanRequestValidation } from '../utils/validation.schema';
 import { InvalidActionException, LoanGuarantorException, RecordNotFoundException, ValidationError } from '../exceptions';
 import { ContributionService } from '../services/contribution.service';
+import { log } from 'console';
 
 const loanService: LoanService = new LoanService();
 const savingGroupService: SavingGroupService = new SavingGroupService();
@@ -45,6 +46,24 @@ export class LoanController{
         }
     }
 
+    //display active loans ending soon
+    fetchActiveLoansEndingSoon = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = parseInt(req.userId as string, 10);
+            const activeLoans = await loanService.usersActiveLoans(userId);
+            const loansEndingSoon = activeLoans.filter((loan) => {
+                const loanEndDate = moment(loan.loanEndDate);
+                const daysUntilEnd = loanEndDate.diff(moment(), 'days');
+                return daysUntilEnd <= 10;
+            });
+            res.json(loansEndingSoon);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+
+    //all loans of the user
     fetchAllLoans = async (req: any, res: Response, next: NextFunction) => {
         try{
 
@@ -124,14 +143,6 @@ export class LoanController{
                 loan: loan
             });
 
-            // const currentDay = moment();
-
-            // res.json({
-            //     loanStartDate: currentDay.add(1, 'days').format('YYYY-MM-DD'),
-            //     loanEndDate: currentDay.add(40, 'days').format('YYYY-MM-DD')
-            // });
-
-
         }catch(err){            
             next(err);
         }
@@ -178,9 +189,11 @@ export class LoanController{
             const userId = parseInt(req.userId as string, 10);
             const totalLoanAmount = await loanService.totalLoanAmount(userId);
             const totalInterestAmount = await loanService.totalInterestAmount(userId);
+            const numberOfPayments = await loanService.numberOfPayments(userId);
             res.json({
                 totalLoanAmount,
-                totalInterestAmount
+                totalInterestAmount,
+                numberOfPayments
             });
 
         }catch(err){
@@ -188,16 +201,16 @@ export class LoanController{
         }
     }
 
-    //approve loan request
-    approveLoanRequest = async (req: any, res: Response, next: NextFunction) => {
+    //Manage loan request
+    mnageLoanRequest = async (req: any, res: Response, next: NextFunction) => {
         try{
 
             const {loanId, decision} = req.body;
 
             const loan = await loanService.manageLoanRequest(loanId, decision);
 
-            res.json({
-                message: 'Loan request approved',
+            res.status(200).json({
+                message: `Loan request ${decision} successfully`,
                 loan: loan
             });
 
@@ -215,6 +228,66 @@ export class LoanController{
             res.json(loan);
 
         }catch(err){
+            next(err);
+        }
+    }
+
+    //fetch all loans
+    fetchAllLoanTypes = async (req: Request, res: Response, next: NextFunction) => {
+        try{
+
+            const pendingLoans = await loanService.pendingLoans();
+            const activeLoans = await loanService.activeLoans();
+            const rejectedLoans = await loanService.rejectedLoans();
+            const completedLoans = await loanService.completedLoans();
+
+            res.json({
+                pendingLoans,
+                activeLoans,
+                rejectedLoans,
+                completedLoans
+            });
+
+        }catch(err){
+            next(err);
+        }
+    }
+
+    //manage guarantor request
+    manageGuarantorRequest = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const {id, decision} = req.body;
+
+            const data = await loanService.manageGuarantorRequest(id, decision);
+            res.status(200).json({
+                data: data,
+                message: `Request ${decision} successfully`
+            });
+
+        }catch(err){
+            next(err);
+        }
+    }
+
+    makeLoanPayment = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const { reference, paymentAmount, interestAmount, principalAmount } = req.body;
+
+            // Check if the loan exists
+            const loan = await loanService.fetchLoan(reference);
+            if (!loan) {
+                throw new RecordNotFoundException('Loan record not found');
+            }
+            // Make the payment
+            const payment = await loanService.makeLoanPayment(loan.id, paymentAmount, principalAmount, interestAmount);
+
+            res.json({
+                message: 'Loan payment successful',
+                payment: payment
+            });
+        } catch (err) {
+            console.log(err);
             next(err);
         }
     }

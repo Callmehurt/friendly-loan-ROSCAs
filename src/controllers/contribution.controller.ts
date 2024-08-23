@@ -73,4 +73,24 @@ export class ContributionController{
             next(err);
         }
     }
+
+    //user's total contribution in a group
+    usersTotalContributionInGroup = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const {groupId, userId} = req.params;
+
+            const contributions = await contributionService.findUsersTotalContributionInGroup(parseInt(userId as string, 10), groupId as string);
+            const totalContributionInAmount = contributions.reduce((totalAmount, contribution) => {
+                // Parse the amount decimal to a number
+                const amount = contribution.amount.toNumber();
+                return totalAmount + amount;
+            }, 0);
+
+            res.json(totalContributionInAmount);
+            
+        }catch(err){
+            next(err);
+        }
+    }
 }

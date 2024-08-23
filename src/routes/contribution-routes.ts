@@ -15,4 +15,7 @@ contributionRouter.get('/user/month/contribution/:groupId', verifyJWT , contribu
 //user's total contributions
 contributionRouter.get('/user/total/contributions', verifyJWT , contributionController.usersTotalContributions);
 
+//user's total contribution in a group
+contributionRouter.get('/user/total/contribution/:groupId/:userId', verifyJWT , contributionController.usersTotalContributionInGroup);
+
 export default contributionRouter;

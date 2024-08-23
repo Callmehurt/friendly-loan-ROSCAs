@@ -164,6 +164,16 @@ export class SavingGroupController{
         }
     }
 
+    //fetch all groups
+    fetchAllGroups = async (req: any, res: Response, next: NextFunction) => {
+        try{
+            const groups = await savingGroupService.fetchAllGroups();
+            res.json(groups);
+        }catch(err){
+            next(err);
+        }
+    }
+
 
 
 }

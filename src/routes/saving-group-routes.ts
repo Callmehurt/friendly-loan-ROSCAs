@@ -14,5 +14,8 @@ savingGroupRoutes.get('/group/:groupId/add/member/:userToAdd', verifyJWT, saving
 savingGroupRoutes.get('/group/:groupId/my/members', verifyJWT, savingGroupController.findUserAddedMembers);
 savingGroupRoutes.get('/group/:groupId/members', verifyJWT, savingGroupController.findGroupMembers);
 
+//fetch all groups
+savingGroupRoutes.get('/all/groups', verifyJWT, savingGroupController.fetchAllGroups);
+
 
 export default savingGroupRoutes;

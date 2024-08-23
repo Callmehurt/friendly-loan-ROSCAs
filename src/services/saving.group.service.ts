@@ -121,6 +121,7 @@ export class SavingGroupService{
                         select: {
                             id: true,
                             uniqueIdentity: true,
+                            profile: true,
                             fullname: true,
                             address: true,
                             email: true,
@@ -222,5 +223,14 @@ export class SavingGroupService{
             }
            },
         });
+    }
+
+    //fetch all groups
+    fetchAllGroups = async (): Promise <SavingGroup []> => {
+        return await db.savingGroup.findMany({
+            include: {
+                user: true
+            }
+        })
     }
 }
