@@ -7,10 +7,13 @@ import { UserService } from "../services/user.service";
 import { SavingGroup, Image } from "../utils/types";
 import { cloudinary } from "../utils/cloudinary";
 import fs from 'fs';
+import { NotificationType } from "../utils/enums";
+import { NotificationService } from "../services/notification.service";
 
 const savingGroupService: SavingGroupService = new SavingGroupService();
 const userService: UserService = new UserService();
 const utils: Utils = new Utils();
+const notificationService: NotificationService = new NotificationService();
 
 export class SavingGroupController{
     
@@ -89,7 +92,12 @@ export class SavingGroupController{
                 throw new ConflictException();
             }
 
-            const newMember = await savingGroupService.enrollMember(userId, groupId, addedBy)
+            const newMember = await savingGroupService.enrollMember(userId, groupId, addedBy);
+
+            //notify user
+            const msg = `You have been added to ${group?.name} group`;
+            const redirectUrl = `/group/${groupId}`;
+            await notificationService.notifyUser(msg, NotificationType.GROUP, userId, redirectUrl);
 
             res.json(newMember);
 

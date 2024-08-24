@@ -51,7 +51,7 @@ model User{
   loans Loan[]
   contributions Contribution[]
   guarantorRequests LoanGuarantors[] @relation("guarantor")
-
+  notifications Notification[]
   @@map("users") 
 }
 
@@ -144,5 +144,28 @@ model LoanPayment {
   @@map("loan_payments")
 }
 
+// notification types
+enum notificationType {
+  payment
+  registration
+  loan
+  contribution
+  guarantor
+  group
+}
+
+model Notification { 
+  id Int @id @default(autoincrement()) 
+  userId Int 
+  message String 
+  notificationType notificationType
+  redirectUrl String
+  isRead Boolean @default(false) 
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt 
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
 
 

@@ -1,5 +1,5 @@
 import { db } from "../utils/db.server";
-import { Contribution } from "../utils/types";
+import { Contribution, User } from "../utils/types";
 import { Decimal } from "@prisma/client/runtime/library";
 
 // import { v4 as uuidv4 } from 'uuid';
@@ -98,4 +98,68 @@ export class ContributionService{
         };
     }
 
+
+    //group member contribution status
+    findGroupMembersContributionStatus = async (groupId: string): Promise<{ contributed: User[], notContributed: User[] }> => {
+        const currentMonth = moment();
+        const startDate = currentMonth.startOf('month').format('YYYY-MM-DD')
+        const endDate = currentMonth.endOf('month').format('YYYY-MM-DD')
+
+        const contributed = await db.contribution.findMany({
+            where: {
+                groupId: groupId,
+                contributionDate: {
+                    gte: new Date(startDate), // Start of date range
+                    lte: new Date(endDate), // End of date range
+                }
+            },
+            select: {
+                userId: true,
+                amount: true
+            }
+        });
+
+        const allGroupMembers = await db.groupMembers.findMany({
+            where: {
+                groupId: groupId
+            },
+            select: {
+                userId: true
+            }
+        });
+
+        const contributedUserIds = contributed.map(contribution => contribution.userId);
+        const notContributedUserIds = allGroupMembers
+            .filter(member => !contributedUserIds.includes(member.userId))
+            .map(member => member.userId);
+
+        const contributedUserNames = await db.user.findMany({
+            where: {
+                id: {
+                    in: contributedUserIds
+                }
+            }
+        });
+
+        const notContributedUserNames = await db.user.findMany({
+            where: {
+                id: {
+                    in: notContributedUserIds
+                }
+            }
+        });
+
+        const contributedUsers = contributedUserNames.map(user => {
+            const contribution = contributed.find(contribution => contribution.userId === user.id);
+            return {
+                ...user,
+                amountContributed: contribution ? contribution.amount : 0
+            };
+        });
+
+        return {
+            contributed: contributedUsers,
+            notContributed: notContributedUserNames
+        };
+    }
 }

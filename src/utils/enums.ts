@@ -29,4 +29,12 @@ export enum LoanGuarantorStatus {
     APPROVED = "approved",
     REJECTED = "rejected"
   }
-  
+
+export enum NotificationType {
+    PAYMENT = 'payment',
+    REGISTRATION = 'registration',
+    LOAN = 'loan',
+    CONTRIBUTION = 'contribution',
+    GUARANTOR = 'guarantor',
+    GROUP = 'group'
+}  

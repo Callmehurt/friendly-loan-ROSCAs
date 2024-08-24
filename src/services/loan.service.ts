@@ -233,7 +233,7 @@ export class LoanService{
 
 
     //manage Loan Request
-    manageLoanRequest = async (loanId: number, decision: string): Promise<Loan | null> => {
+    manageLoanRequest = async (loanId: number, decision: string): Promise<Loan> => {
         const currentDay = moment();
         const startDate = currentDay.add(1, 'days').format('YYYY-MM-DD HH:mm:ss')
         const endDate = currentDay.add(40, 'days').format('YYYY-MM-DD HH:mm:ss')
@@ -312,7 +312,7 @@ export class LoanService{
 
     //guarantor request management
     //id as in table ID
-    manageGuarantorRequest = async (id: number, decision: string): Promise <any | null> => {
+    manageGuarantorRequest = async (id: number, decision: string): Promise <any> => {
         
         const status = decision === 'approved' ? LoanGuarantorStatus.APPROVED : LoanGuarantorStatus.REJECTED;
         return await db.$transaction(async (tx) => {
@@ -351,5 +351,79 @@ export class LoanService{
         });
     }
 
+    //total interest collected in a group
+    totalInterestCollectedInGroup = async (groupId: string): Promise<number> => {
+        const loans = await db.loan.findMany({
+            where: {
+                groupId: groupId,
+                status: LoanStatus.COMPLETED
+            },
+            select: {
+                id: true
+            }
+        });
+    
+        const loanIds = loans.map(loan => loan.id);
+    
+        const totalInterest = await db.loanPayment.aggregate({
+            _sum: {
+                interestAmount: true
+            },
+            where: {
+                loanId: {
+                    in: loanIds
+                }
+            }
+        });
+    
+        const totalInterestAmount = totalInterest._sum.interestAmount instanceof Decimal
+            ? totalInterest._sum.interestAmount.toNumber()
+            : 0;
+    
+        return totalInterestAmount;
+    }
+
+    // active loans with payment deadline soon
+    activeLoansWithDeadlineSoon = async (daysBeforeDeadline: number): Promise<Loan[]> => {
+        const currentDate = new Date();
+        const deadlineDate = new Date();
+        deadlineDate.setDate(deadlineDate.getDate() + daysBeforeDeadline);
+
+        return await db.loan.findMany({
+            where: {
+                status: LoanStatus.ACTIVE,
+                loanEndDate: {
+                    gte: currentDate,
+                    lte: deadlineDate
+                }
+            },
+            include: {
+                group: true,
+                user: true
+            }
+        });
+    }
+
+    //group active loans with payment deadline soon
+    groupActiveLoansWithDeadlineSoon = async (groupId: string, daysBeforeDeadline: number): Promise<Loan[]> => {
+        const currentDate = new Date();
+        const deadlineDate = new Date();
+        deadlineDate.setDate(deadlineDate.getDate() + daysBeforeDeadline);
+
+        return await db.loan.findMany({
+            where: {
+                groupId: groupId,
+                status: LoanStatus.ACTIVE,
+                loanEndDate: {
+                    gte: currentDate,
+                    lte: deadlineDate
+                }
+            },
+            include: {
+                group: true,
+                user: true
+            }
+        });
+    }
 
 }

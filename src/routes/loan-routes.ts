@@ -43,4 +43,13 @@ loanRoutes.post('/make/repayment', verifyJWT , studentOnlyMiddleware, loanContro
 //loan payment deadline soon
 loanRoutes.get('/payment/deadline/soon', verifyJWT , studentOnlyMiddleware, loanController.fetchActiveLoansEndingSoon);
 
+//fetch group's interest collection
+loanRoutes.get('/fetch/group/interest/collection/:groupId', verifyJWT, loanController.groupTotalInterestCollection);
+
+//activeLoansWithDeadlineSoon
+loanRoutes.get('/active/loans/deadline/soon', verifyJWT, loanController.activeLoansWithDeadlineSoon);
+
+//activeLoansWithDeadlineSoon
+loanRoutes.get('/group/active/loans/deadline/soon/:groupId', verifyJWT, loanController.groupActiveLoansWithDeadlineSoon);
+
 export default loanRoutes;

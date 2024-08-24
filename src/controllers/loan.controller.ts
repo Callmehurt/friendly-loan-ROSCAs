@@ -5,11 +5,16 @@ import { SavingGroupService } from '../services/saving.group.service';
 import { LoanRequestValidation } from '../utils/validation.schema';
 import { InvalidActionException, LoanGuarantorException, RecordNotFoundException, ValidationError } from '../exceptions';
 import { ContributionService } from '../services/contribution.service';
-import { log } from 'console';
+import { NotificationService } from '../services/notification.service';
+import { UserService } from '../services/user.service';
+import { NotificationType } from '../utils/enums';
+import { ref } from 'joi';
 
 const loanService: LoanService = new LoanService();
 const savingGroupService: SavingGroupService = new SavingGroupService();
 const contributionService: ContributionService = new ContributionService();
+const notificationService: NotificationService = new NotificationService();
+const userService: UserService = new UserService();
 
 export class LoanController{
 
@@ -125,7 +130,17 @@ export class LoanController{
                 await this.checkIfUserNeedGuarantor(totalContributionInAmount, principalAmount);
             }
 
+            //find user loan taken
+            const loanTaker = await userService.findUserById(userId);
 
+            //notify users to be guarantors
+            guarantorIds.forEach(async (guarantorId: number) => {
+                const message = `You have been requested to be a guarantor for a loan of £${principalAmount} by ${loanTaker?.fullname}`;
+                const redirectUrl = '/loans';
+                await notificationService.loanGuarantorRequestNotification(guarantorId, message, redirectUrl);
+            });
+
+            
             //loan data
             const loanData = {
                 groupId: groupId,
@@ -138,6 +153,12 @@ export class LoanController{
 
             const loan = await loanService.requestLoan(loanData);
             
+            //notify admin
+            const message = `Loan request of £${principalAmount} has been made by ${loanTaker?.fullname}`;
+            const redirectUrl = `/loan/manage/${loan?.reference}`;
+            await notificationService.notifyAdmin(message, NotificationType.LOAN, redirectUrl);
+
+
             res.json({
                 message: 'Loan request successfull',
                 loan: loan
@@ -209,6 +230,11 @@ export class LoanController{
 
             const loan = await loanService.manageLoanRequest(loanId, decision);
 
+            //notify loan taker
+            const message = `Your loan request has been ${decision}`;
+            const redirectUrl = `/loan/${loan.reference}`;
+            await notificationService.loanRequestNotification(loan.userId, message, redirectUrl);
+        
             res.status(200).json({
                 message: `Loan request ${decision} successfully`,
                 loan: loan
@@ -260,6 +286,15 @@ export class LoanController{
             const {id, decision} = req.body;
 
             const data = await loanService.manageGuarantorRequest(id, decision);
+
+            //guarantor
+            const guarantor = await userService.findUserById(data.guarantorId);
+
+            //notify loan taker
+            const message = `Your loan guarantor request to ${guarantor?.fullname} has been ${decision}`;
+            const redirectUrl = `/loan/${data.loanReference}`;
+            await notificationService.loanGuarantorRequestNotification(data.userId, message, redirectUrl);
+
             res.status(200).json({
                 data: data,
                 message: `Request ${decision} successfully`
@@ -270,6 +305,7 @@ export class LoanController{
         }
     }
 
+    //loan repayment function
     makeLoanPayment = async (req: any, res: Response, next: NextFunction) => {
         try {
             const { reference, paymentAmount, interestAmount, principalAmount } = req.body;
@@ -282,12 +318,59 @@ export class LoanController{
             // Make the payment
             const payment = await loanService.makeLoanPayment(loan.id, paymentAmount, principalAmount, interestAmount);
 
+            // Notify the user
+            const message = `Your loan payment of £${paymentAmount} has been received`;
+            const redirectUrl = `/loan/${reference}`;
+            await notificationService.loanPaymentNotification(loan.userId, message, redirectUrl);
+
+            //notify admin
+            const loanTaker = await userService.findUserById(loan.userId);
+            const adminMessage = `Loan payment of £${paymentAmount} has been made by ${loanTaker?.fullname}`;
+            const adminRedirectUrl = `/loan/manage/${reference}`;
+            await notificationService.notifyAdmin(adminMessage, NotificationType.PAYMENT, adminRedirectUrl)
+
             res.json({
                 message: 'Loan payment successful',
                 payment: payment
             });
         } catch (err) {
             console.log(err);
+            next(err);
+        }
+    }
+
+    //group's total interest collection
+    groupTotalInterestCollection = async (req: any, res: Response, next: NextFunction) => {
+        try{
+            const {groupId} = req.params;
+            const totalInterestCollection = await loanService.totalInterestCollectedInGroup(groupId);
+            res.json(totalInterestCollection);
+        }catch(err){
+            console.log(err);
+            
+            next(err);
+        }
+    }
+
+    // activeLoansWithDeadlineSoon
+    activeLoansWithDeadlineSoon = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const loans = await loanService.activeLoansWithDeadlineSoon(15);
+            res.json(loans);
+
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // activeLoansWithDeadlineSoon
+    groupActiveLoansWithDeadlineSoon = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const {groupId} = req.params;
+            const loans = await loanService.groupActiveLoansWithDeadlineSoon(groupId, 15);
+            res.json(loans);
+
+        } catch (err) {
             next(err);
         }
     }

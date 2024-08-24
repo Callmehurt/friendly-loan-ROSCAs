@@ -102,3 +102,11 @@ export interface LoanPayment {
     interestAmount: Decimal;
     paymentAmount: Decimal
 }
+
+export interface Notification {
+    id: number;
+    userId: number;
+    message: string;
+    notificationType: string;
+    isRead: boolean;
+}

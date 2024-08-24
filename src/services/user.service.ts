@@ -2,11 +2,17 @@ import { db } from "../utils/db.server";
 import { User } from "../utils/types";
 import { Utils } from "../utils";
 
-
 const utils: Utils = new Utils();
 
-
 export class UserService {
+
+    findAdmin = async(): Promise <Partial <User | null>> => {
+        return await db.user.findFirst({
+            where: {
+                role: "admin"
+            }
+        })
+    }
 
     findUser = async(email: string): Promise <Partial <User | null>> => {
         return db.user.findUnique({
@@ -85,7 +91,7 @@ export class UserService {
         const uniqueIdentity = await utils.generateRandomId(10);
 
         return await db.$transaction( async (tx) => {
-            return await tx.user.create({
+            const newUser = await tx.user.create({
                 data: {
                     uniqueIdentity,
                     fullname,
@@ -109,6 +115,8 @@ export class UserService {
                     updatedAt: true
                 }
             })
+
+            return newUser;
         })
     }
 

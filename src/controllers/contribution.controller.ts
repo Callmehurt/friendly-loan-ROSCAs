@@ -2,11 +2,15 @@ import { ContributionService } from "../services/contribution.service";
 import { Response, NextFunction } from "express";
 import { ContributionValidation } from "../utils/validation.schema";
 import { ContributionConflictException, RecordNotFoundException, ValidationError } from "../exceptions";
-import moment from "moment";
 import { SavingGroupService } from "../services/saving.group.service";
+import { NotificationService } from "../services/notification.service";
+import { UserService } from "../services/user.service";
+import { NotificationType } from "../utils/enums";
 
 const contributionService: ContributionService = new ContributionService();
 const savingGroupService: SavingGroupService = new SavingGroupService();
+const notificationService: NotificationService = new NotificationService();
+const userService: UserService = new UserService();
 
 export class ContributionController{
 
@@ -34,6 +38,18 @@ export class ContributionController{
             }
 
             const contribution = await contributionService.contribute(userId, groupId as string, amount as number, paymentId as string);
+
+            //notify admin
+            const user = await userService.findUserById(userId);
+            const msg = `New contribution of ${amount} has been made by ${user?.fullname}`;
+            const redirectUrl = `/group/${groupId}`;
+            await notificationService.notifyAdmin(msg, NotificationType.CONTRIBUTION, redirectUrl);
+
+            //notify contributor
+            const userMsg = `You have successfully contributed ${amount} to the group`;
+            const redirect = `/group/${groupId}`;
+            await notificationService.notifyUser(userMsg, NotificationType.CONTRIBUTION, userId, redirect);
+
 
             res.json({
                 message: 'Contributed successfully',
@@ -89,6 +105,19 @@ export class ContributionController{
 
             res.json(totalContributionInAmount);
             
+        }catch(err){
+            next(err);
+        }
+    }
+
+    //group members contribution status in a group
+    groupMembersContributionStatus = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const {groupId} = req.params;
+            const data = await contributionService.findGroupMembersContributionStatus(groupId as string);
+            res.json(data);
+
         }catch(err){
             next(err);
         }

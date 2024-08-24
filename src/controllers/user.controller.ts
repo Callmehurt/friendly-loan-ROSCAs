@@ -7,9 +7,12 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs'
 import { cloudinary } from "../utils/cloudinary";
 import { Image } from "../utils/types";
+import { NotificationService } from "../services/notification.service";
+import { NotificationType } from "../utils/enums";
 
 const userService: UserService = new UserService();
 const utils: Utils = new Utils();
+const notificationService: NotificationService = new NotificationService();
 
 export class UserController{
 
@@ -49,6 +52,12 @@ export class UserController{
             req.body.publicId = imageData.public_id;
 
             const user = await userService.createStudent(req.body);
+
+
+            //notify admin
+            const msg = `New student ${fullname} has joined the platform`;
+            await notificationService.notifyAdmin(msg, NotificationType.REGISTRATION, '');
+
 
             res.json(user); 
 

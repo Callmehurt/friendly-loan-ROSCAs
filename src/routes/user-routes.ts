@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import { UserController } from "../controllers/user.controller";
 import { verifyJWT } from "../middleware/verify.jwt";
 import { upload } from "../utils/multer";
