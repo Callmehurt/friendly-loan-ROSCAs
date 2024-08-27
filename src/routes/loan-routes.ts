@@ -13,6 +13,7 @@ loanRoutes.post('/user/request/loan', verifyJWT , loanController.createLoanReque
 
 //fetch user's pending loans
 loanRoutes.get('/my/categorized/loans', verifyJWT , loanController.fetchLoans);
+
 loanRoutes.get('/my/all/loans', verifyJWT , loanController.fetchAllLoans);
 
 //user's loan guarantor requests
@@ -51,5 +52,8 @@ loanRoutes.get('/active/loans/deadline/soon', verifyJWT, loanController.activeLo
 
 //activeLoansWithDeadlineSoon
 loanRoutes.get('/group/active/loans/deadline/soon/:groupId', verifyJWT, loanController.groupActiveLoansWithDeadlineSoon);
+
+//fetch pending loan only
+loanRoutes.get('/fetch/pending/loans', verifyJWT, adminOnlyMiddleware, loanController.fetchPendingLoanOnly);
 
 export default loanRoutes;

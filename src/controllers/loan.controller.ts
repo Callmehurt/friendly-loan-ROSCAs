@@ -7,14 +7,16 @@ import { InvalidActionException, LoanGuarantorException, RecordNotFoundException
 import { ContributionService } from '../services/contribution.service';
 import { NotificationService } from '../services/notification.service';
 import { UserService } from '../services/user.service';
-import { NotificationType } from '../utils/enums';
+import { LoanStatus, NotificationType } from '../utils/enums';
 import { ref } from 'joi';
+import { GuarantorService } from '../services/guarantor.service';
 
 const loanService: LoanService = new LoanService();
 const savingGroupService: SavingGroupService = new SavingGroupService();
 const contributionService: ContributionService = new ContributionService();
 const notificationService: NotificationService = new NotificationService();
 const userService: UserService = new UserService();
+const guarantorService: GuarantorService = new GuarantorService();
 
 export class LoanController{
 
@@ -126,6 +128,20 @@ export class LoanController{
             // check for user's contribution amount status/ should be > £100
             const {totalContributionInAmount} = await this.checkContributionAmountStatus(userId, groupId);
 
+            //check user's any active or pending loan in a group
+            const userActiveOrPendingLoan = await loanService.fetchUserPreviousPendingOrActiveLoan(userId, groupId as string);
+            if(userActiveOrPendingLoan){
+                throw new InvalidActionException('Cannot request loan. You have an active or pending loan in this group');
+            }
+
+            //check if user is a guarantee in any active loan
+            const guarantorInActiveLoans = await this.checkIfUserIsGuarantorForActiveLoan(userId);
+
+            if(guarantorInActiveLoans.length > 0){
+                throw new InvalidActionException('Cannot request loan. You are a guarantor in an active loan');
+            }            
+
+            //check if user need guarantor
             if(guarantorIds.length == 0){
                 await this.checkIfUserNeedGuarantor(totalContributionInAmount, principalAmount);
             }
@@ -139,7 +155,7 @@ export class LoanController{
                 const redirectUrl = '/loans';
                 await notificationService.loanGuarantorRequestNotification(guarantorId, message, redirectUrl);
             });
-
+            
             
             //loan data
             const loanData = {
@@ -164,7 +180,9 @@ export class LoanController{
                 loan: loan
             });
 
-        }catch(err){            
+        }catch(err){
+            console.log(err);
+                        
             next(err);
         }
     }
@@ -222,6 +240,17 @@ export class LoanController{
         }
     }
 
+    //check if user is a guarantee in any active loan
+    checkIfUserIsGuarantorForActiveLoan = async (userId: number) => {
+        const guarantorRequests = await guarantorService.fetchUserGuarantorRequests(userId);
+        const activeLoans = guarantorRequests.map((gr: any) => {
+            if(gr.loan.status == LoanStatus.ACTIVE || gr.loan.status == LoanStatus.PENDING){
+                return gr.loan;
+            }
+        }).filter((loan: any) => loan != null);
+        return activeLoans
+    }
+
     //Manage loan request
     mnageLoanRequest = async (req: any, res: Response, next: NextFunction) => {
         try{
@@ -252,6 +281,18 @@ export class LoanController{
             const {reference} = req.params;
             const loan = await loanService.fetchLoan(reference as string);
             res.json(loan);
+
+        }catch(err){
+            next(err);
+        }
+    }
+
+    //fetch Pending Loan Ony
+    fetchPendingLoanOnly = async (req: any, res: Response, next: NextFunction) => {
+        try{
+
+            const loans = await loanService.pendingLoans();
+            res.json(loans);
 
         }catch(err){
             next(err);

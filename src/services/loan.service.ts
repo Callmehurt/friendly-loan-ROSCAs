@@ -426,4 +426,32 @@ export class LoanService{
         });
     }
 
+
+    //total interest collected overall
+    getTotalInterestCollectedOverall = async (): Promise<number> => {
+        const totalInterest = await db.loanPayment.aggregate({
+            _sum: {
+                interestAmount: true
+            },
+        });
+    
+        const totalInterestAmount = totalInterest._sum.interestAmount instanceof Decimal
+            ? totalInterest._sum.interestAmount.toNumber()
+            : 0;
+    
+        return totalInterestAmount;
+    }
+
+    //fetch user previous pending or active loan
+    fetchUserPreviousPendingOrActiveLoan = async (userId: number, groupId: string): Promise<Loan | null> => {
+        return await db.loan.findFirst({
+            where: {
+                userId: userId,
+                groupId: groupId,
+                status: {
+                    in: [LoanStatus.PENDING, LoanStatus.ACTIVE]
+                }
+            }
+        })
+    }
 }

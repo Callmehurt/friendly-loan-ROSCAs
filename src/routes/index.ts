@@ -5,6 +5,7 @@ import paymentRoutes from "./payment-routes";
 import contributionRouter from "./contribution-routes";
 import loanRoutes from "./loan-routes";
 import notificationRoutes from "./notification-routes";
+import adminDashboardRoutes from "./admin-dashboard-routes";
 
 const rootRouter: Router = Router();
 
@@ -14,5 +15,6 @@ rootRouter.use('/payment', paymentRoutes);
 rootRouter.use('/contribution', contributionRouter);
 rootRouter.use('/loan', loanRoutes);
 rootRouter.use('/notification', notificationRoutes);
+rootRouter.use('', adminDashboardRoutes);
 
 export default rootRouter;

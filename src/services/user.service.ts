@@ -136,6 +136,18 @@ export class UserService {
     }
 
 
+    //non admin users
+    listNonAdminUsers = async(): Promise<User[]> => {
+        return await db.user.findMany({
+            where: {
+                role: {
+                    not: "admin"
+                }
+            }
+        });
+    }
+
+
     //search for member or user
     searchUserByNameOrUniqueIdentity = async (searchParams: string): Promise <User []> => {
         return await db.user.findMany({

@@ -162,4 +162,18 @@ export class ContributionService{
             notContributed: notContributedUserNames
         };
     }
+
+
+    //total contributions till now
+    totalOverallContributionAmount = async(): Promise<number> => {
+        const contriAmount = await db.contribution.aggregate({
+            _sum: {
+                amount: true
+            },
+        });
+        const amount = contriAmount._sum.amount instanceof Decimal
+            ? contriAmount._sum.amount.toNumber()
+            : 0;
+        return amount;    
+    }
 }
