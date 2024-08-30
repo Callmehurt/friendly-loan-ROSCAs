@@ -14,7 +14,8 @@ export enum ErrorCodes{
     CONFLICT = 409,
     RECORD_NOT_FOUND = 703,
     INVALID_ACTION = 704,
-    GUARANTOR_NEED_ERROR = 705 
+    GUARANTOR_NEED_ERROR = 705,
+    EMAIL_NOT_VERIFIED = 706, 
 }
 
 export enum LoanStatus {

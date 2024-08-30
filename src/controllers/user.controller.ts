@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
 import { Utils } from "../utils";
-import { InvalidCredentialError, InvalidTokenException, UnauthorizedException, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
+import { EmailNotVerifiedException, InvalidCredentialError, InvalidTokenException, UnauthorizedException, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
 import { UserLoginValidation, UserValidation } from "../utils/validation.schema";
 import jwt from 'jsonwebtoken';
 import fs from 'fs'
@@ -9,10 +9,13 @@ import { cloudinary } from "../utils/cloudinary";
 import { Image } from "../utils/types";
 import { NotificationService } from "../services/notification.service";
 import { NotificationType } from "../utils/enums";
+import { randomInt } from "crypto";
+import { EmailService } from "../services/email.service";
 
 const userService: UserService = new UserService();
 const utils: Utils = new Utils();
 const notificationService: NotificationService = new NotificationService();
+const emailService: EmailService = new EmailService();
 
 export class UserController{
 
@@ -53,17 +56,18 @@ export class UserController{
 
             const user = await userService.createStudent(req.body);
 
+             //notify admin
+             const msg = `New student ${fullname} has joined the platform`;
+             await notificationService.notifyAdmin(msg, NotificationType.REGISTRATION, '');
 
-            //notify admin
-            const msg = `New student ${fullname} has joined the platform`;
-            await notificationService.notifyAdmin(msg, NotificationType.REGISTRATION, '');
-
+             //send email verification mail
+             const token = randomInt(100000, 999999);
+             await userService.storeEmailValidationToken(user?.id as number, token.toString());
+             await emailService.sendEMail(email, 'Email Verification', `Your email verification code is ${token}`);
 
             res.json(user); 
 
-        }catch(error){
-            console.log(error);
-            
+        }catch(error){            
             next(error);
         }
     }
@@ -90,6 +94,10 @@ export class UserController{
             if(!isPasswordValid){
                 throw new InvalidCredentialError();
                 
+            }
+
+            if(existedUser.emailVerified === false){
+                throw new EmailNotVerifiedException();
             }
     
             const { accessToken, refreshToken } = await utils.generateSignature({

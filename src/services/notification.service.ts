@@ -80,7 +80,7 @@ export class NotificationService {
     }
 
     notifyAdmin = async (message: string, notificationType: NotificationType, redirectUrl: string): Promise <Notification | null> => {
-        return await userService.findAdmin().then(async (admin) => {
+        return await userService.findAdmin().then(async (admin) => {            
             return await this.notifyUser(message, notificationType, admin?.id as number, redirectUrl);
         })
     }

@@ -12,6 +12,7 @@ export interface User{
     phone: string;
     password: string;
     role: string;
+    emailVerified: boolean;
 }
 
 export interface UserWithGroup{
@@ -26,6 +27,12 @@ export interface UserWithGroup{
     password: string;
     role: string;
     groups: GroupMember;
+}
+
+
+export interface EmailToken {
+    userId: number;
+    token: string;
 }
 
 

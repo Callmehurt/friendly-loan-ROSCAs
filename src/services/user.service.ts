@@ -1,10 +1,22 @@
 import { db } from "../utils/db.server";
-import { User } from "../utils/types";
+import { EmailToken, User } from "../utils/types";
 import { Utils } from "../utils";
 
 const utils: Utils = new Utils();
 
 export class UserService {
+
+    //store user email validation token
+    storeEmailValidationToken = async (userId: number, token: string): Promise <EmailToken | null> => {
+        return await db.$transaction( async (tx) => {
+            return await tx.emailToken.create({
+                data: {
+                    userId: userId,
+                    token: token
+                }
+            })
+        })
+    }
 
     findAdmin = async(): Promise <Partial <User | null>> => {
         return await db.user.findFirst({
@@ -22,22 +34,10 @@ export class UserService {
         })
     }
 
-    findUserById = async(id: number): Promise <Partial<User | null>> => {
+    findUserById = async(id: number): Promise <User | null> => {
         return await db.user.findFirst({
             where: {
                 id: id
-            },
-            select: {
-                id: true,
-                profile: true,
-                fullname: true,
-                address: true,
-                email: true,
-                phone: true,
-                role: true,
-                password: true,
-                createdAt: true,
-                updatedAt: true
             }
         })
     }

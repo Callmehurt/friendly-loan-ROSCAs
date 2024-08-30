@@ -1,4 +1,3 @@
-import { string } from "joi";
 import { ErrorCodes } from "../utils/enums";
 
 export class AppError extends Error{
@@ -196,12 +195,29 @@ export class InvalidActionException extends AppError{
         )
     }
 }
+
 export class LoanGuarantorException extends AppError{
 
     constructor(
         message: string = 'Loan guarantors need for the requested amount',
         errorCode: ErrorCodes = ErrorCodes.GUARANTOR_NEED_ERROR,
         description: string = 'Loan request exception',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
+export class EmailNotVerifiedException extends AppError{
+
+    constructor(
+        message: string = 'Email is not verified',
+        errorCode: ErrorCodes = ErrorCodes.GUARANTOR_NEED_ERROR,
+        description: string = 'Email not verified',
     ){
         super(
             message,
