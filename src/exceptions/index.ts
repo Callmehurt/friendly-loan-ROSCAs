@@ -216,8 +216,24 @@ export class EmailNotVerifiedException extends AppError{
 
     constructor(
         message: string = 'Email is not verified',
-        errorCode: ErrorCodes = ErrorCodes.GUARANTOR_NEED_ERROR,
+        errorCode: ErrorCodes = ErrorCodes.EMAIL_NOT_VERIFIED,
         description: string = 'Email not verified',
+    ){
+        super(
+            message,
+            errorCode,
+            '',
+            description,
+        )
+    }
+}
+
+export class InvalidEmailTokenException extends AppError{
+
+    constructor(
+        message: string = 'Provided token is invalid',
+        errorCode: ErrorCodes = ErrorCodes.EMAIL_TOKEN_INVALID,
+        description: string = 'Token invalid',
     ){
         super(
             message,

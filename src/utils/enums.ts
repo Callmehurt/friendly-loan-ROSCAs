@@ -16,6 +16,7 @@ export enum ErrorCodes{
     INVALID_ACTION = 704,
     GUARANTOR_NEED_ERROR = 705,
     EMAIL_NOT_VERIFIED = 706, 
+    EMAIL_TOKEN_INVALID = 707, 
 }
 
 export enum LoanStatus {

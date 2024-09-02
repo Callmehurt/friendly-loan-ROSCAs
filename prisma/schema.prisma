@@ -172,7 +172,7 @@ model Notification {
 
 model EmailToken {
   userId Int 
-  token String
+  token String @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

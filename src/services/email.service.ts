@@ -1,4 +1,5 @@
 import { transporter } from "../utils/nodemailer"
+import { db } from "../utils/db.server";
 
 export class EmailService{
 
@@ -14,5 +15,26 @@ export class EmailService{
             console.log('email error', err);   
         }
         
+    }
+
+    checkToken = async (token: string) => {
+        return await db.emailToken.findFirst({
+            where: {
+                token: token
+            }
+        })
+    }
+
+    verifyEmail = async (email: string) => {
+        return await db.$transaction( async (tx) => {
+            return await tx.user.update({
+                where: {
+                    email
+                },
+                data: {
+                    emailVerified: true
+                }  
+            })
+        })
     }
 }

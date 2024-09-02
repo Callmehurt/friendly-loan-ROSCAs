@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
 import { Utils } from "../utils";
-import { EmailNotVerifiedException, InvalidCredentialError, InvalidTokenException, UnauthorizedException, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
+import { EmailNotVerifiedException, InvalidCredentialError, InvalidEmailTokenException, InvalidTokenException, UnauthorizedException, UserExistError, UserNotFoundError, ValidationError } from "../exceptions";
 import { UserLoginValidation, UserValidation } from "../utils/validation.schema";
 import jwt from 'jsonwebtoken';
 import fs from 'fs'
@@ -72,6 +72,34 @@ export class UserController{
         }
     }
 
+    //verify email
+    verifyEmail = async(req: Request, res: Response, next: NextFunction) => {
+        try{
+
+            const { token } = req.body;
+
+            const checkToken = await emailService.checkToken(token as string);
+
+            if(!checkToken){
+                throw new InvalidEmailTokenException();
+            }
+
+            const user = await userService.findUserById(checkToken.userId);
+            if(!user){
+                throw new UserNotFoundError();
+            }
+
+            await emailService.verifyEmail(user.email as string);
+
+            res.status(200).json({
+                message: 'Email verified successfully'
+            });
+
+        }catch(err){
+            next(err);
+        }
+    }
+
     //login user
     loginUser = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -96,9 +124,9 @@ export class UserController{
                 
             }
 
-            if(existedUser.emailVerified === false){
-                throw new EmailNotVerifiedException();
-            }
+            // if(existedUser.emailVerified === false){
+            //     throw new EmailNotVerifiedException();
+            // }
     
             const { accessToken, refreshToken } = await utils.generateSignature({
                 role: existedUser.role,

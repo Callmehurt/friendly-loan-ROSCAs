@@ -14,6 +14,9 @@ userRoutes.get('/search/user', verifyJWT, userController.searchUserByNameOrUniqu
 //password change
 userRoutes.put('/change-password', verifyJWT, userController.changePassword);
 
+//verify email
+userRoutes.post('/verify-email', userController.verifyEmail);
+
 userRoutes.get('/refresh-token', userController.refreshAuthToken);
 userRoutes.get('/logout', userController.logoutUser);
 userRoutes.get('/test', userController.listUsers);

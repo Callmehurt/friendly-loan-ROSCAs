@@ -76,6 +76,7 @@ export class UserService {
                 email: true,
                 phone: true,
                 role: true,
+                emailVerified: true,
                 createdAt: true,
                 updatedAt: true
             }
