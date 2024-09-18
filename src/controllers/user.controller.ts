@@ -124,10 +124,6 @@ export class UserController{
                 
             }
 
-            // if(existedUser.emailVerified === false){
-            //     throw new EmailNotVerifiedException();
-            // }
-    
             const { accessToken, refreshToken } = await utils.generateSignature({
                 role: existedUser.role,
                 id: existedUser.id
@@ -135,7 +131,6 @@ export class UserController{
     
             await userService.updateUser(existedUser.id as number, {refreshToken: refreshToken});
 
-            // res.cookie('accessToken', accessToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
             res.cookie('refreshToken', refreshToken, {httpOnly: true, sameSite: false, secure: true, maxAge: 24 * 60 * 60 * 1000});
 
             res.json({

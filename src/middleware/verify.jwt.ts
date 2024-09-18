@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { InvalidTokenException, UnauthorizedException } from '../exceptions';
-// require('dotenv').config();
 
 
+//verifyJWT is a middleware function that verifies the JWT token in the Authorization header of the request.
 export const verifyJWT = (req: any, res: Response, next: NextFunction) => {
 
     const authHeader = req.headers.authorization?.toString() || req.headers.Authorization?.toString();

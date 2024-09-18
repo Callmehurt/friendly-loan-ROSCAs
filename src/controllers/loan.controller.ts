@@ -334,7 +334,7 @@ export class LoanController{
             //notify loan taker
             const message = `Your loan guarantor request to ${guarantor?.fullname} has been ${decision}`;
             const redirectUrl = `/loan/${data.loanReference}`;
-            await notificationService.loanGuarantorRequestNotification(data.userId, message, redirectUrl);
+            await notificationService.loanGuarantorRequestNotification(data.loan.userId, message, redirectUrl);
 
             res.status(200).json({
                 data: data,
@@ -342,6 +342,8 @@ export class LoanController{
             });
 
         }catch(err){
+            console.log(err);
+            
             next(err);
         }
     }

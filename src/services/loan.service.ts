@@ -322,6 +322,9 @@ export class LoanService{
                 },
                 data: {
                     status: status
+                },
+                include: {
+                    loan: true
                 }
             });
         });
