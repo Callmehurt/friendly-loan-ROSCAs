@@ -9,6 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx nodemon",
+    "build": "tsc",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org sandeep-shrestha-mx --project node-express ./src && sentry-cli sourcemaps upload --org sandeep-shrestha-mx --project node-express ./src"
   },
   "keywords": [],
